@@ -1,0 +1,227 @@
+
+
+/* 登录框容器样式 */
+.login-container {
+    width: 400px;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    animation: fadeInUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards; /* 登录卡片上滑出现 */
+    animation-delay: 0.3s;
+
+}
+
+/* 标题区域样式 */
+.login-header {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+/* 登录方式按钮容器 */
+.login-tabs {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #eee;
+}
+
+/* 每个 tab 按钮样式 */
+.tab {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background: none;
+    color: #95a5a6;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+/* 当前激活 tab 样式 */
+.tab.active {
+    color: #2c3e50;
+    border-bottom: 3px solid #2c3e50;
+    font-weight: 500;
+}
+
+/* 表单字段容器 */
+.form-group {
+    margin-bottom: 30px;
+    animation: fadeIn 0.6s ease forwards;
+}
+
+/* 输入框通用样式 */
+input {
+    width: 100%;
+    padding: 14px;
+    border: 2px solid #ecf0f1;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: 
+        border-color 0.3s ease, 
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 输入框聚焦样式 */
+input:focus {
+    outline: none;
+    border-color: #2c3e50;
+    transform: translateY(-1px); /* 向上微动 */
+}
+
+/* 验证码输入区域（验证码 + 按钮并排） */
+.sms-input {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* 验证码输入框样式 */
+.sms-input input[type="text"] {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+/* 获取验证码按钮样式 */
+.sms-btn {
+    padding: 10px 14px;
+    background: #2d3436;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition:
+        all 0.3s ease,
+        transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+/* 鼠标悬停验证码按钮 */
+.sms-btn:hover {
+    background: #636e72;
+    transform: translateY(-2px);
+}
+
+/* 鼠标点击验证码按钮 */
+.sms-btn:active {
+    transform: translateY(1px);
+}
+
+/* 提交按钮（登录按钮）样式 */
+.submit-btn {
+    width: 100%;
+    padding: 15px;
+    background: #2d3436;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 
+        all 0.3s ease, 
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 登录按钮悬停样式 */
+.submit-btn:hover {
+    background: #636e72;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(44, 62, 80, 0.15);
+}
+
+/* 登录按钮点击样式 */
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+/* 第三方登录区域（如微信登录） */
+.third-login {
+    margin-top: 30px;
+}
+
+/* 分割线样式（中间文字，两边横线） */
+.divider {
+    color: #bdc3c7;
+    text-align: center;
+    position: relative;
+    margin: 20px 0;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    display: inline-block;
+    width: 15%;
+    height: 1px;
+    background: #ecf0f1;
+    vertical-align: middle;
+    margin: 0 10px;
+}
+
+
+/* 底部链接区域：忘记密码 / 注册 */
+.footer-links {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+}
+
+.footer-links a {
+    color: #95a5a6;
+    text-decoration: none;
+    font-size: 14px;
+    transition: 
+        color 0.3s ease, 
+        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-links a:hover {
+    color: #2c3e50;
+    transform: translateY(-1px);
+}
+
+/* 登录卡片淡入上移动画 */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 表单字段淡入动画 */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* 登录方式切换动画（密码<->验证码） */
+.password-group, .sms-group {
+    animation: formSwitch 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes formSwitch {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
