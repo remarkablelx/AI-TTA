@@ -226,12 +226,8 @@ export default {
       </div>
     </Teleport>
 
-
-
-    <!-- 用户入口 -->
-    <div
-      class="user-entry"
-      @click="$emit('toggle-user-panel')">
+      <!-- 用户入口 -->
+    <div class="user-entry" @click="$emit('toggle-user-panel')">
       <div class="user-avatar">
         <img src="@/assets/photos/default-avatar.png" alt="用户" />
       </div>

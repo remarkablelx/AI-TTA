@@ -3,11 +3,12 @@
     <!-- 用户头像部分 -->
     <div class="user-avatar">
       <img :src="avatarUrl" alt="用户头像" />
+      <!-- 用户名 -->
+      <h3 class="username">{{ userName }}</h3>
     </div>
     <!-- 用户详细信息部分 -->
     <div class="user-details">
-      <!-- 用户名 -->
-      <h3 class="username">{{ userName }}</h3>
+
       <!-- 性别、手机号、邮箱：放在同一行并固定位置 -->
       <div class="additional-info">
         <span class="info-item">性别: <strong>{{ gender }}</strong></span>
@@ -26,30 +27,12 @@
 export default {
   name: 'UserInfo1',
   props: {
-    avatarUrl: {
-      type: String,
-      required: true
-    },
-    userName: {
-      type: String,
-      required: true
-    },
-    gender: {
-      type: String,
-      required: true
-    },
-    phonenumber: {
-      type: String,
-      required: true
-    },
-    email: {
-      type: String,
-      required: true
-    },
-    personalNote: {
-      type: String,
-      required: true
-    }
+    avatarUrl: String,
+    userName: String,
+    gender: String,
+    phonenumber: String,
+    email: String,
+    personalNote: String
   }
 };
 </script>
@@ -70,13 +53,13 @@ export default {
 }
 
 /* 用户头像样式 */
-.user-avatar {
-  width: 100px; /* 增大头像容器 */
-  height: 100px;
-  border-radius: 50%; /* 圆形头像 */
-  border: 3px solid #000; /* 黑色边框 */
-  overflow: hidden; /* 保证头像图片不会溢出容器 */
-  margin-right: 40px; /* 增加头像与文本之间的距离 */
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  /* 确保图片填充满容器并保持比例 */
+  object-position: center;  /* 确保图片居中对齐 */
+  max-width: 100px;  /* 限制最大宽度为100px */
+  max-height: 100px;  /* 限制最大高度为100px */
 }
 
 .user-avatar img {

@@ -5,6 +5,7 @@ import MainView from "@/views/MainView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ChangePasswordView from "@/views/ChangePasswordView.vue";
 import UserInfo2 from '@/components/Main/UserInfo2.vue';
+import UserInfo from '@/components/Main/UserInfo.vue';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -37,6 +38,11 @@ const router = createRouter({
       path:'/userinfo2',
       name:'userinfo2',
       component:UserInfo2
+    },
+    {
+      path:'/userinfo',
+      name:'userinfo',
+      component:UserInfo
     }
   ],
 })
