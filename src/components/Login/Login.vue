@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-
+import {loginUser, registerUser} from "@/api/api.ts"; // 引入loginUser接口
 // Pinia 认证状态
 import { useAuthStore } from '@/stores/auth'
 
@@ -68,28 +68,24 @@ const handleSubmit = async () => {
 
   // ⛔ 其他情况调用真实接口
   try {
-    const payload: any = {
-      phone: phone.value,
-      type: loginType.value
-    }
-
-    if (loginType.value === 'password') {
-      payload.password = password.value
-    } else {
-      payload.sms_code = smsCode.value
-    }
-
-    const response = await axios.post('/api/password_login', payload)
-
-    if (response.data.success) {
+  // 发送请求到后端登录接口
+    const response = await loginUser(phone.value, password.value);
+    console.log('完整响应：', response)           // 打印完整响应对象
+    console.log('响应数据：', response.data)       // 打印后端返回的数据部分
+    console.log('token',response.data.token)
+    if (response.data.code === '0') {  // 后端返回登录成功
       const authStore = useAuthStore()
-      await authStore.login(response.data.token)
-      await router.push('/main')
+      await authStore.login(response.data.token) // 保存 token 到 Pinia store
+      const nickname = response.data.nickname || '默认昵称';
+      const avatar = response.data.avatar || '默认头像';
+      console.log(`登录成功，用户名: ${nickname}, 头像: ${avatar}`);
+      console.log('登录成功，准备跳转到 /main')
+      await router.push('/main')  // 登录成功后跳转到主页面
     } else {
-      alert(response.data.message)
+      alert(response.data.message)  // 后端返回的错误信息
     }
   } catch (error: any) {
-    alert(error.response?.data.message || '登录失败')
+    alert(error.response?.data.message || '登录失败')  // 网络或其他请求失败时的错误信息
   }
 }
 </script>
