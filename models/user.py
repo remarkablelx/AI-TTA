@@ -12,6 +12,10 @@ class User(db.Model):
     sex = db.Column(db.SmallInteger, comment='性别')
     email = db.Column(db.String(45), comment='邮箱')
     note = db.Column(db.Text, comment='备注信息')
+    height = db.Column(db.Float, comment='身高')
+    weight = db.Column(db.Float, comment='体重')
+    location = db.Column(db.String(45), comment='地区')
+    birth = db.Column(db.DateTime, comment='出生日期')
 
     def __repr__(self):
         return f'<User {self.user_id}>'
@@ -19,12 +23,14 @@ class User(db.Model):
     def to_dict(self):
         return {
             'user_id': self.user_id,
-            'account': self.account,
-            'password': self.password,
             'nickname': self.nickname,
             'avatar': self.avatar,
             'register_time': self.register_time,
             'sex': self.sex,
             'email': self.email,
-            'note': self.note
+            'note': self.note,
+            'height': self.height,
+            'weight': self.weight,
+            'location':self.location,
+            'birth': self.birth
         }
