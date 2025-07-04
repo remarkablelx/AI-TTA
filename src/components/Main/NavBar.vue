@@ -27,6 +27,7 @@ export default {
         { id: 'analysis-view', label: '分析界面'},
         { id: 'analysis-history', label: '分析历史'},
         { id: 'technical-evaluation', label: '技术问答'},
+        { id: 'user-information',label:'个人信息'}
       ]
     }
   },
@@ -89,8 +90,12 @@ export default {
       this.uploadStatus = null;  //重置上传状态
     },
     handleTabClick(tab) {
-      if (tab.id === 'analysis-view' && !this.hasHistory) return //如果没有历史记录，禁止点击分析状态
-      this.$emit('switch-tab', tab.id) //切换标签
+      if (tab.id === 'analysis-history') {
+        this.$emit('toggle-view', 'history'); // 显示历史记录
+      }
+      else if (tab.id === 'user-information') {
+        this.$emit('toggle-view', 'userInfo'); // 显示用户信息
+      }
     },
   },
   setup() {
@@ -225,14 +230,6 @@ export default {
         </div>
       </div>
     </Teleport>
-
-      <!-- 用户入口 -->
-    <div class="user-entry" @click="$emit('toggle-user-panel')">
-      <div class="user-avatar">
-        <img src="@/assets/photos/default-avatar.png" alt="用户" />
-      </div>
-      <span class="username">{{ authStore.userInfo?.username ?? '加载中...' }}</span>
-    </div>
   </nav>
 </template>
 

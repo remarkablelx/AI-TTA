@@ -4,8 +4,9 @@ import LoginView from "@/views/LoginView.vue";
 import MainView from "@/views/MainView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import ChangePasswordView from "@/views/ChangePasswordView.vue";
-import UserInfo2 from '@/components/Main/UserInfo2.vue';
-import UserInfo from '@/components/Main/UserInfo.vue';
+import History from "@/components/Main/History.vue";
+import Video from"@/components/Main/AnalysisVideo.vue"
+import UserInfo from "@/components/Main/UserInfo.vue";
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -35,16 +36,19 @@ const router = createRouter({
       component: MainView
     },
     {
-      path:'/userinfo2',
-      name:'userinfo2',
-      component:UserInfo2
+      path:'/history',
+      name:'history',
+      component:History
     },
     {
       path:'/userinfo',
       name:'userinfo',
-      component:UserInfo
+      component: UserInfo
     }
   ],
 })
 
 export default router
+
+
+

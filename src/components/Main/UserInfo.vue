@@ -20,6 +20,7 @@
       :height="height"
       :weight="weight"
       :email="email"
+      :location="location"
       :phonenumber="phonenumber"
       :personalNote="personalNote"
       :registrationDate="registrationDate"
@@ -33,6 +34,7 @@
 // 导入 UserInfo1 和 UserInfo2 组件
 import UserInfo1 from './UserInfo1.vue';
 import UserInfo2 from './UserInfo2.vue';
+
 
 export default {
   name: 'UserInfo',
@@ -51,6 +53,7 @@ export default {
       height:'',
       weight:'',
       registrationDate: '',
+      location:'',
     };
   },
   methods: {
@@ -65,6 +68,7 @@ export default {
       this.height = updatedData.height;
       this.weight = updatedData.weight;
       this.registrationDate = updatedData.registrationDate;
+      this.location = updatedData.location;
     }
   }
 };
@@ -95,3 +99,5 @@ export default {
 
 </style>
 
+
+我这里怎么调用呢？

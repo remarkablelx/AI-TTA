@@ -1,39 +1,74 @@
 <template>
   <div class="user-container">
-    <!-- 侧边栏组件 -->
-    <NavBar @toggle-collapse="toggleCollapse" :is-collapsed="isCollapsed" @toggle-user-panel="toggleUserInfo" />
+    <NavBar
+      @toggle-collapse="toggleCollapse"
+      :is-collapsed="isCollapsed"
+      @toggle-view="toggleView"
+    />
 
     <!-- 右侧内容区域 -->
     <div class="user-main" :class="{ 'collapsed': isCollapsed }">
-      <!-- 将 UserInfo 组件挂载在这里 -->
-      <UserInfo v-if="isUserInfoVisible" />
+      <!-- 添加 transition 动画包裹 UserInfo 和 History -->
+      <transition name="fade" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+        <UserInfo v-if="isUserInfoVisible" />
+      </transition>
+      <transition name="fade" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+        <History v-if="isHistoryVisible" />
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
-// 导入 NavBar 和 UserInfo 组件
 import NavBar from '@/components/Main/NavBar.vue';
 import UserInfo from '@/components/Main/UserInfo.vue';
+import History from '@/components/Main/History.vue';
+
 export default {
   components: {
-    NavBar,  // 注册 NavBar 组件
-    UserInfo  // 注册 UserInfo 组件
+    NavBar,
+    UserInfo,
+    History,
   },
   data() {
     return {
-      isCollapsed: false,  // 控制侧边栏是否折叠
-      isUserInfoVisible: false,  // 控制用户信息界面的显示与隐藏
+      isCollapsed: false,
+      isUserInfoVisible: false,
+      isHistoryVisible: false,
     };
   },
   methods: {
     toggleCollapse() {
-      this.isCollapsed = !this.isCollapsed;  // 切换侧边栏的折叠状态
+      this.isCollapsed = !this.isCollapsed;
     },
-    toggleUserInfo() {
-      this.isUserInfoVisible = !this.isUserInfoVisible;  // 切换用户信息界面的显示与隐藏
-    }
-  }
+    toggleView(view) {
+      if (view === 'history') {
+        this.isUserInfoVisible = false;
+        this.isHistoryVisible = !this.isHistoryVisible;
+      } else if (view === 'userInfo') {
+        this.isHistoryVisible = false;
+        this.isUserInfoVisible = !this.isUserInfoVisible;
+      }
+    },
+    // 过渡钩子
+    beforeEnter(el) {
+      el.style.opacity = 0;  // 初始状态
+      el.style.transform = 'translateY(10px)';  // 初始位置
+    },
+    enter(el, done) {
+      el.offsetHeight; // 强制重排
+      el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';  // 设置动画属性
+      el.style.opacity = 1;
+      el.style.transform = 'translateY(0px)';
+      done();
+    },
+    leave(el, done) {
+      el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';  // 设置动画属性
+      el.style.opacity = 0;
+      el.style.transform = 'translateY(10px)';
+      done();
+    },
+  },
 };
 </script>
 
@@ -73,6 +108,14 @@ export default {
 }
 
 .user-main.collapsed {
-  margin-left: 0 !important;  /* 当侧边栏折叠时，右侧内容区不再有左边距 */
+  margin-left: 0 !important;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active in <2.1.8 */ {
+  opacity: 0;
+  transform: translateY(10px);
 }
 </style>

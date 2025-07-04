@@ -17,14 +17,14 @@
         <tr>
           <td>性别</td>
           <td>{{ form.gender }}</td>
-          <td>身高 (cm)</td>
-          <td>{{ form.height }}</td>
+          <td>位置</td>
+          <td>{{ form.location }}</td>
         </tr>
         <tr>
+          <td>身高 (cm)</td>
+          <td>{{ form.height }}</td>
           <td>体重 (kg)</td>
           <td>{{ form.weight }}</td>
-          <td>BMI</td>
-          <td>{{ bmi }}</td>
         </tr>
         <tr>
           <td>邮箱</td>
@@ -67,14 +67,14 @@
               <tr>
                 <td>性别</td>
                 <td><input type="text" v-model="form.gender" /></td>
-                <td>身高 (cm)</td>
-                <td><input type="number" v-model="form.height" min="0" /></td>
+                <td>位置</td>
+                <td><input type="text" v-model="form.location" /></td>
               </tr>
               <tr>
+                <td>身高 (cm)</td>
+                <td><input type="number" v-model="form.height" min="0" /></td>
                 <td>体重 (kg)</td>
                 <td><input type="number" v-model="form.weight" min="0" /></td>
-                <td>BMI</td>
-                <td>{{ bmi }}</td>
               </tr>
               <tr>
                 <td>邮箱</td>
@@ -122,11 +122,12 @@ export default {
       form: {
         avatarUrl: '',
         userName: '',
-        gender: '',
+        gender: '男',
+        location:'',
         height: '',
         weight: '',
-        email: '',
-        phonenumber: '',
+        email: '822684749@qq.com',
+        phonenumber: '19132050485',
         personalNote: '',
         registrationDate: '',
       },

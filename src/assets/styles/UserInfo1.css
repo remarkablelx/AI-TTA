@@ -1,72 +1,64 @@
 /* 用户信息整体容器 */
 .user-info-container {
-  display: flex; /* 使用 Flexbox 布局 */
-  align-items: flex-start;
   padding: 25px;
   border-radius: 12px;
   background-color: #f9f9f9;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   max-width: 600px;
   margin: 20px auto;
-  font-family: 'Arial', sans-serif; /* 使用黑体 */
-  position: relative; /* 保证定位不受其他元素影响 */
+  font-family: 'Arial', sans-serif;
+  position: relative;
+  width: 100%;
 }
 
-/* 用户头像样式 */
-.user-avatar img {
+/* 表格的样式 */
+table {
   width: 100%;
-  height: 100%;
-  object-fit: cover;  /* 确保图片填充满容器并保持比例 */
-  object-position: center;  /* 确保图片居中对齐 */
-  max-width: 100px;  /* 限制最大宽度为100px */
-  max-height: 100px;  /* 限制最大高度为100px */
+  border-collapse: collapse;
 }
 
-.user-avatar img {
-  width: 100%;
-  height: 100%;
+/* 头像单元格 */
+.avatar-cell {
+  width: 120px;  /* 设置头像列的宽度 */
+  text-align: center;
+}
+
+.avatar-cell img {
+  width: 100px;  /* 固定头像大小 */
+  height: 100px;  /* 固定头像大小 */
   object-fit: cover;
+  border-radius: 50%;  /* 可选，圆形头像 */
 }
 
-/* 用户详细信息部分的样式 */
-.user-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  font-size: 0.95em; /* 调整字体大小 */
-  width: 100%; /* 确保详细信息区域占满剩余空间 */
+/* 信息单元格 */
+.info-cell {
+  padding-left: 50px;
+  vertical-align: top;
 }
 
 /* 用户名样式 */
 .username {
-  font-size: 1.3em; /* 字体适当增大 */
+  font-size: 1.3em;
   font-weight: bold;
   color: #333;
   margin-bottom: 10px;
 }
 
-/* 信息样式（性别、手机号、邮箱）放在一行并固定位置 */
-.additional-info {
+/* 信息表格的样式 */
+.info-table {
+  width: 100%;
   font-size: 1em;
   color: #555;
-  display: flex; /* 使用 Flexbox 排版 */
-  justify-content: space-between; /* 分散对齐 */
-  gap: 20px; /* 设置每项之间的间距 */
-  margin-bottom: 10px; /* 增加底部间距 */
-}
-
-.info-item {
-  flex-basis: 30%; /* 确保每项占据一定宽度 */
-  white-space: nowrap; /* 防止内容换行 */
-}
-
-/* 个人说明样式 */
-.personal-note {
-  font-size: 1em;
-  color: #444;
   margin-top: 15px;
 }
 
-.personal-note span {
-  display: block;
+.info-table td {
+  padding: 8px;
+  vertical-align: top;
+}
+
+.label {
+  font-weight: bold;
+  padding-right: 10px;
+  width: 120px;
 }

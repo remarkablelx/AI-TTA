@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import {loginUser, registerUser} from "@/api/api.ts"; // 引入loginUser接口
+import {getCaptcha, password_loginUser, captcha_loginUser} from "@/api/api.ts"; // 引入loginUser接口
 // Pinia 认证状态
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth2'
 
 // 发送请求的库
 import axios from 'axios'
@@ -18,76 +18,121 @@ const router = useRouter()
 const loginType = ref<'password' | 'sms'>('password')
 
 // 表单输入项
-const phone = ref('')       // 手机号
-const password = ref('')    // 密码
-const smsCode = ref('')     // 验证码
+const phone = ref('');              // 手机号
+const password = ref('');           // 密码
+const smsCode = ref('');            // 用户输入验证码
+const captchaId = ref('');          // 验证码 ID
+const captchaText = ref('');        // 验证码文本
 
-// 验证码倒计时（秒）
-const countdown = ref(0)
-
-//发送短信验证码
+// 获取验证码
 const getSmsCode = async () => {
+  const phoneRegex = /^(?:(?:\+|00)86)?1[3-9]\d{9}$/;
+  if (!phoneRegex.test(phone.value)) {
+    alert('请输入有效的手机号码');
+    return;
+  }
   try {
-    const response = await axios.post('/api/send_sms', { phone: phone.value })
-    if (response.data.success) {
-      // 启动倒计时 60 秒
-      countdown.value = 60
-      const timer = setInterval(() => {
-        countdown.value--
-        if (countdown.value <= 0) clearInterval(timer)
-      }, 1000)
+    // 请求后端获取验证码 ID 和验证码文本
+    const captchaResponse = await getCaptcha();  // 获取验证码
+    console.log('验证码请求响应:', captchaResponse);  // 打印整个响应数据
+    if (captchaResponse.code !== '0') {
+      console.log('验证码获取失败');
+      return;
     }
-  } catch (error: any) {
-    alert(error.response?.data.message || '发送验证码失败')
+    else{
+      alert('您的验证码是：'+captchaResponse.captcha_text)
+    }
+    // 存储获取到的 captcha_id 和 captcha_text
+    captchaId.value = captchaResponse.captcha_id;
+    captchaText.value = captchaResponse.captcha_text;
+     // 获取短信验证码
+  } catch (error) {
+    console.error('验证码报错:', error);  // 打印完整的错误信息
+    alert('验证码报错');
   }
-}
+};
 
-// 登录提交处理（根据登录方式处理密码或验证码）
 
-const handleSubmit = async () => {
-  // ✅ 写死测试账号和密码（开发阶段使用）
-  const TEST_PHONE = '1'
-  const TEST_PASSWORD = '1'
-
-  if (
-    loginType.value === 'password' &&
-    phone.value === TEST_PHONE &&
-    password.value === TEST_PASSWORD
-  ) {
-    // 模拟后端返回 token
-    const fakeToken = 'fake.jwt.token'
-
-    const authStore = useAuthStore()
-    await authStore.login(fakeToken)
-    // 登录后跳转到main界面
-    console.log('登录成功，准备跳转到 /main')
-    await router.push('/main')
-    console.log('router.currentRoute:', router.currentRoute.value)
-    return
-  }
-
-  // ⛔ 其他情况调用真实接口
+// 密码登录处理
+const handlePasswordLogin = async () => {
   try {
   // 发送请求到后端登录接口
-    const response = await loginUser(phone.value, password.value);
-    console.log('完整响应：', response)           // 打印完整响应对象
-    console.log('响应数据：', response.data)       // 打印后端返回的数据部分
-    console.log('token',response.data.token)
-    if (response.data.code === '0') {  // 后端返回登录成功
-      const authStore = useAuthStore()
-      await authStore.login(response.data.token) // 保存 token 到 Pinia store
-      const nickname = response.data.nickname || '默认昵称';
-      const avatar = response.data.avatar || '默认头像';
+    const response = await password_loginUser(phone.value, password.value);
+    console.log('完整响应：', response)           // 打印完整响应对象，直接就是个data了
+    if (response.code === '0') {  // 后端返回登录成功
+      const nickname = response.nickname || '默认昵称';
+      const avatar = response.avatar || '默认头像';
+      const token = response.token ;
+      const user_id =  response.user_id ;
+
+      const userInfo = {
+        nickname: response.nickname || '默认昵称',
+        avatar: response.avatar || '默认头像',
+        token: response.token || '',  // 假设后端返回 token
+        user_id: response.user_id || '',  // 假设后端返回 user_id
+      };
+
+
+      // 使用 Pinia store 保存用户信息
+      const authStore = useAuthStore();
+      authStore.setUserInfo(userInfo);
+
       console.log(`登录成功，用户名: ${nickname}, 头像: ${avatar}`);
-      console.log('登录成功，准备跳转到 /main')
+      console.log('登录成功，准备跳转到 /main');
       await router.push('/main')  // 登录成功后跳转到主页面
     } else {
-      alert(response.data.message)  // 后端返回的错误信息
+      alert('登录失败111')  // 后端返回的错误信息
     }
   } catch (error: any) {
-    alert(error.response?.data.message || '登录失败')  // 网络或其他请求失败时的错误信息
+    alert(error || '登录失败111')  // 网络或其他请求失败时的错误信息
   }
 }
+
+
+// 验证码登录处理
+const handleCaptchaLogin = async () => {
+  try {
+  // 发送请求到后端登录接口
+    const response = await captcha_loginUser(phone.value, captchaId.value, smsCode.value);
+    console.log('完整响应：', response)           // 打印完整响应对象，直接就是个data了
+    if (response.code === '0') {  // 后端返回登录成功
+      const nickname = response.nickname || '默认昵称';
+      const avatar = response.avatar || '默认头像';
+      const token = response.token ;
+      const user_id = response.user_id ;
+
+      const userInfo = {
+        nickname: response.nickname || '默认昵称',
+        avatar: response.avatar || '默认头像',
+        token: response.token || '',  // 假设后端返回 token
+        user_id: response.user_id || '',  // 假设后端返回 user_id
+      };
+
+      // 使用 Pinia store 保存用户信息
+      const authStore = useAuthStore();
+      authStore.setUserInfo(userInfo);
+
+      console.log(`登录成功，用户名: ${nickname}, 头像: ${avatar}`);
+      console.log('登录成功，准备跳转到 /main')
+
+      await router.push('/main')  // 登录成功后跳转到主页面
+    } else {
+      alert('登录失败111')  // 后端返回的错误信息
+    }
+  } catch (error: any) {
+    alert(error || '登录失败111')  // 网络或其他请求失败时的错误信息
+  }
+}
+
+// 处理提交表单
+const handleSubmit = async () => {
+  if (loginType.value === 'password') {
+    await handlePasswordLogin();
+  } else {
+    await handleCaptchaLogin();
+  }
+};
+
 </script>
 
 <template>
@@ -151,14 +196,9 @@ const handleSubmit = async () => {
             placeholder="验证码"
             required
           >
-          <!-- 验证码按钮，倒计时期间禁用 -->
-          <button
-            type="button"
-            class="sms-btn"
-            :disabled="countdown > 0"
-            @click="getSmsCode"
-          >
-            {{ countdown ? `${countdown}s` : '获取验证码' }}
+          <!-- 验证码按钮 -->
+          <button type="button" class="sms-btn"  @click="getSmsCode">
+            获取验证码
           </button>
         </div>
       </div>
