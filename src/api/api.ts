@@ -73,6 +73,7 @@ export const captcha_loginUser = async (account: string, captcha_id: string, sms
   }
 };
 
+// 获取个人信息API
 export const get_personalInfo = async (token: string) => {
   try {
     // 发起 POST 请求
@@ -88,6 +89,77 @@ export const get_personalInfo = async (token: string) => {
     }
   } catch (error) {
     console.error('获取个人信息时出错:', error);
+    throw error;
+  }
+};
+
+
+// 修改个人信息的 API
+export const update_personalInfo = async (token:string, nickname:string,avatar:string,sex:int,email:string,note:string) => {
+  try {
+    // 发起 POST 请求
+    const response = await api.post('/user/update_personal_info', {
+      token,        // 传递 token 参数
+      nickname,
+      avatar,
+      sex,
+      email,
+      note
+    });
+    // 处理返回的数据
+    if (response.data) {
+      console.log('修改成功:', response.data);
+      return response.data;  // 返回修改后的用户信息或其他成功标识
+    } else {
+      console.error('修改失败');
+    }
+  } catch (error) {
+    console.error('修改个人信息时出错:', error);
+    throw error;
+  }
+};
+
+// 修改个人信息的 API
+export const cancel_account = async (token:string, captcha_id: string, smsCode: string) => {
+  try {
+    // 发起 POST 请求
+    const response = await api.post('/user/cancel_account', {
+      token,
+      captcha_id,
+      captcha_text: smsCode,  // 提交用户输入的验证码
+    });
+    // 处理返回的数据
+    if (response.data) {
+      console.log('注销成功:', response.data);
+      return response.data;
+    } else {
+      console.error('注销失败');
+    }
+  } catch (error) {
+    console.error('注销个人信息时出错:', error);
+    throw error;
+  }
+};
+
+// 修改密码的 API
+export const set_password = async (token:string, new_password:string, captcha_id: string, smsCode: string) => {
+  try {
+    // 发起 POST 请求
+    const response = await api.post('/user/set_password', {
+      token,
+      new_password,
+      captcha_id,
+      captcha_text: smsCode,  // 提交用户输入的验证码
+    });
+    // 处理返回的数据
+    if (response.data) {
+      console.log('重置成功:', response.data);
+      return response.data;
+    } else {
+      console.error('重置失败');
+    }
+  } catch (error) {
+    console.error('重置时出错:', error);
     throw error;
   }
 };

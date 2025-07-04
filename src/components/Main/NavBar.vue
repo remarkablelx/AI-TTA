@@ -26,7 +26,6 @@ export default {
       tabs: [
         { id: 'analysis-view', label: '分析界面'},
         { id: 'analysis-history', label: '分析历史'},
-        { id: 'technical-evaluation', label: '技术问答'},
         { id: 'user-information',label:'个人信息'}
       ]
     }

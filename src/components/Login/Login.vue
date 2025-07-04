@@ -3,20 +3,18 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {getCaptcha, password_loginUser, captcha_loginUser} from "@/api/api.ts"; // 引入loginUser接口
 // Pinia 认证状态
-import { useAuthStore } from '@/stores/auth2'
-
+import { useUserStore } from '@/stores/userStore.ts'
 // 发送请求的库
 import axios from 'axios'
-
 // 应用 Logo 组件
 import logo from '@/components/Home/Logo.vue'
 
+
+
 // 路由实例，用于跳转页面
 const router = useRouter()
-
 // 登录方式：'password' 或 'sms'
 const loginType = ref<'password' | 'sms'>('password')
-
 // 表单输入项
 const phone = ref('');              // 手机号
 const password = ref('');           // 密码
@@ -64,18 +62,10 @@ const handlePasswordLogin = async () => {
       const avatar = response.avatar || '默认头像';
       const token = response.token ;
       const user_id =  response.user_id ;
-
-      const userInfo = {
-        nickname: response.nickname || '默认昵称',
-        avatar: response.avatar || '默认头像',
-        token: response.token || '',  // 假设后端返回 token
-        user_id: response.user_id || '',  // 假设后端返回 user_id
-      };
-
-
-      // 使用 Pinia store 保存用户信息
-      const authStore = useAuthStore();
-      authStore.setUserInfo(userInfo);
+      const userStore = useUserStore();
+      userStore.setToken(response.token); // 存储 token 和更新登录状态
+      // 打印存储的 token
+      console.log('登录成功，存储的 token:', userStore.token);
 
       console.log(`登录成功，用户名: ${nickname}, 头像: ${avatar}`);
       console.log('登录成功，准备跳转到 /main');
@@ -100,17 +90,10 @@ const handleCaptchaLogin = async () => {
       const avatar = response.avatar || '默认头像';
       const token = response.token ;
       const user_id = response.user_id ;
-
-      const userInfo = {
-        nickname: response.nickname || '默认昵称',
-        avatar: response.avatar || '默认头像',
-        token: response.token || '',  // 假设后端返回 token
-        user_id: response.user_id || '',  // 假设后端返回 user_id
-      };
-
-      // 使用 Pinia store 保存用户信息
-      const authStore = useAuthStore();
-      authStore.setUserInfo(userInfo);
+      const userStore = useUserStore();
+      userStore.setToken(response.token); // 存储 token 和更新登录状态
+      // 打印存储的 token
+      console.log('登录成功，存储的 token:', userStore.token);
 
       console.log(`登录成功，用户名: ${nickname}, 头像: ${avatar}`);
       console.log('登录成功，准备跳转到 /main')

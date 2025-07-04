@@ -2,28 +2,39 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logo from "@/components/Home/Logo.vue";
+import {getCaptcha,set_password} from "@/api/api.js";
+import { useUserStore } from '@/stores/userStore.js';  // 导入状态管理
 
 const router = useRouter()
-const phone = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
-const smsCode = ref('')
-const countdown = ref(0)
-
-// 复用短信验证码逻辑
-const getSmsCode = () => {
-  const phoneRegex = /^(?:(?:\+|00)86)?1[3-9]\d{9}$/
-  if (!phoneRegex.test(phone.value)) {
-    alert('请输入有效的手机号码')
-    return
+const phone = ref('');              // 手机号
+const smsCode = ref('');            // 用户输入验证码
+const captchaId = ref('');          // 验证码 ID
+const captchaText = ref('');        // 验证码文本
+// 获取用户 store 和 token
+const userStore = useUserStore();
+const token = userStore.token; // 获取 token
+// 获取验证码
+const getSmsCode = async () => {
+  try {
+    const captchaResponse = await getCaptcha();  // 请求验证码
+    console.log('验证码请求响应:', captchaResponse);
+    if (captchaResponse.code !== '0') {
+      console.log('验证码获取失败');
+      return;
+    } else {
+      alert('您的验证码是：' + captchaResponse.captcha_text);
+    }
+    // 存储验证码信息
+    captchaId.value = captchaResponse.captcha_id;
+    captchaText.value = captchaResponse.captcha_text;
+  } catch (error) {
+    console.error('验证码报错:', error);
+    alert('验证码报错');
   }
-
-  countdown.value = 60
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) clearInterval(timer)
-  }, 1000)
-}
+};
+// 处理请求
 
 const handleReset = () => {
   if (newPassword.value !== confirmPassword.value) {
