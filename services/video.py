@@ -6,6 +6,11 @@ import cv2
 class VideoService:
     @staticmethod
     def upload_video(video_path:str, video_name:str):
+        """上传视频文件并保存到数据库
+        :param video_path: 视频文件存储路径
+        :param video_name: 视频名称
+        :return: 包含操作结果和视频信息的字典
+        """
         try:
             video_info = VideoService.get_info(video_path)
             # 创建新视频
@@ -33,10 +38,10 @@ class VideoService:
     @staticmethod
     def get_info(video_path):
         """
-            获取视频基本信息
-            :param video_path: 视频文件路径
-            :return: 包含视频信息的字典
-            """
+        获取视频基本信息
+        :param video_path: 视频文件路径
+        :return: 包含视频信息的字典
+        """
         if not os.path.exists(video_path):
             return {'code':'-1','message': "视频文件不存在"}
 
@@ -81,7 +86,10 @@ class VideoService:
 
     @staticmethod
     def get_video_info(video_id:int):
-        """根据视频ID获取视频信息"""
+        """根据视频ID获取视频信息
+        :param video_id: 视频ID
+        :return: 包含视频信息的字典
+        """
         try:
             # 从数据库获取视频
             video = Video.query.get(video_id)
@@ -98,7 +106,11 @@ class VideoService:
 
     @staticmethod
     def set_name(video_id:int, new_name:str):
-        """更新视频名称"""
+        """更新视频名称
+        :param video_id: 视频ID
+        :param new_name: 新的视频名称
+        :return: 操作结果字典
+        """
         try:
             # 从数据库获取视频
             video = Video.query.get(video_id)
@@ -119,7 +131,11 @@ class VideoService:
 
     @staticmethod
     def set_path(video_id: int, new_path:str):
-        """更新视频路径"""
+        """更新视频存储路径并刷新视频信息
+        :param video_id: 视频ID
+        :param new_path: 新的视频存储路径
+        :return: 操作结果和新视频信息的字典
+        """
         try:
             # 从数据库获取视频
             video = Video.query.get(video_id)

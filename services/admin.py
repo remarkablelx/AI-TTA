@@ -9,12 +9,18 @@ from sqlalchemy import or_, desc, asc, func
 class AdminService:
     @staticmethod
     def login(account:str, password:str):
-        """管理员登录"""
+        """管理员登录验证
+        :param account: 管理员账号
+        :param password: 管理员密码
+        :return: 包含登录结果的字典
+        """
+        # 根据账号查询管理员信息
         admin = Admin.query.filter_by(account=account).first()
 
         if not admin:
             return {'code': '-1', 'message': '管理员账号不存在'}
 
+        # 验证密码是否正确
         if not check_password_hash(admin.password, password):
             return {'code': '-1', 'message': '密码错误'}
 
@@ -26,8 +32,13 @@ class AdminService:
 
     @staticmethod
     def all_user(page_num: int = 1, page_size: int = 10):
-        """获取所有用户的信息，并进行分页操作"""
+        """获取所有用户信息（分页），并统计每个用户的记录数量
+        :param page_num: 当前页码
+        :param page_size: 每页显示数量
+        :return: 包含用户列表和分页信息的字典
+        """
         try:
+            # 分页查询用户数据
             pagination = User.query.paginate(page=page_num, per_page=page_size, error_out=False)
             users = pagination.items
 
@@ -68,7 +79,10 @@ class AdminService:
 
     @staticmethod
     def get_user_info(user_id: int):
-        """获取用户详细信息"""
+        """获取指定用户的详细信息
+        :param user_id: 用户ID
+        :return: 用户信息字典
+        """
         try:
             user = User.query.get(user_id)
             return user.to_dict()
@@ -78,7 +92,10 @@ class AdminService:
 
     @staticmethod
     def delete_user(user_id):
-        """删除用户"""
+        """删除指定用户及其相关记录
+        :param user_id: 要删除的用户ID
+        :return: 操作结果字典
+        """
         try:
             user = User.query.get(user_id)
             if not user:
@@ -98,17 +115,17 @@ class AdminService:
 
     @staticmethod
     def filter_users(search = None, sort_field = 'user_id', sort_order = 'asc',sex = None, page_num = 1, page_size = 10):
-        """
-        获取用户列表
-        - page: 页码
-        - per_page: 每页大小
-        - search: 搜索关键字
-        - sort_field: 排序字段
-        - sort_order: 排序方向
-        - sex: 性别筛选
+        """多条件筛选用户列表
+        :param search: 搜索关键字
+        :param sort_field: 排序字段
+        :param sort_order: 排序方向
+        :param sex: 性别筛选条件
+        :param page_num: 当前页码
+        :param page_size: 每页数量
+        :return: 包含筛选结果的字典
         """
         try:
-            #=获取用户基础信息和记录数量
+            # 获取用户基础信息和记录数量
             query = db.session.query(
                 User.user_id,
                 User.nickname,
@@ -189,8 +206,13 @@ class AdminService:
 
     @staticmethod
     def all_record(page_num: int = 1, page_size: int = 10):
-        """获取所有用户的所有记录，并进行分页操作"""
+        """获取所有分析记录（分页）
+        :param page_num: 当前页码
+        :param page_size: 每页数量
+        :return: 包含记录列表的字典
+        """
         try:
+            # 查询记录并关联视频表获取视频名称
             query = db.session.query(
                 Record,
                 Video.video_name
@@ -223,7 +245,10 @@ class AdminService:
 
     @staticmethod
     def delete_record(record_id):
-        """删除用户"""
+        """删除指定分析记录
+        :param record_id: 要删除的记录ID
+        :return: 操作结果字典
+        """
         try:
             record = Record.query.get(record_id)
             if not record_id:
@@ -240,8 +265,16 @@ class AdminService:
 
     @staticmethod
     def filter_record(search = None, order = 'asc',state = None, page_num = 1, page_size = 10):
-        """根据条件筛选分析记录"""
+        """多条件筛选分析记录
+        :param search: 搜索关键字
+        :param order: 排序方向
+        :param state: 记录状态筛选
+        :param page_num: 当前页码
+        :param page_size: 每页数量
+        :return: 包含筛选结果的字典
+        """
         try:
+            # 查询记录并关联视频表获取视频名称
             query = db.session.query(
                 Record,
                 Video.video_name
