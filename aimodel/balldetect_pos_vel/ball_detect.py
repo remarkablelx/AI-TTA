@@ -11,12 +11,13 @@ from scipy.spatial import distance
 
 
 def read_video(path_video):
-    """ Read video file
-    :params
-        path_video: path to video file
-    :return
-        frames: list of video frames
-        fps: frames per second
+    """
+    读取视频文件。
+
+    :param path_video: 视频文件的路径
+    :return:
+        frames: 视频帧的列表
+        fps: 视频的帧率
     """
     cap = cv2.VideoCapture(path_video)
     fps = int(cap.get(cv2.CAP_PROP_FPS))
@@ -32,25 +33,31 @@ def read_video(path_video):
     return frames, fps
 
 
-def infer_model(frames, model, fps):  # 添加fps参数
-    """ Run pretrained model on a consecutive list of frames
-    :params
-        frames: list of consecutive video frames
-        model: pretrained model
-        fps: frames per second of the video
-    :return
-        ball_track: list of detected ball points
-        dists: list of euclidean distances between two neighbouring ball points
-        output_video: list of processed frames
+def infer_model(frames, model):
     """
-    # cv2.namedWindow("Processing Preview", cv2.WINDOW_NORMAL)
+    在一系列连续的视频帧上运行预训练模型。
 
+    :param frames: 连续视频帧的列表
+    :param model: 预训练好的模型
+    :return:
+        ball_track: 检测到的球点坐标列表
+        dists: 相邻球点之间的欧氏距离列表
+        output_video: 带有实时检测效果的帧列表
+    """
+
+    #cv2.namedWindow("Processing Preview", cv2.WINDOW_NORMAL)
+    # 定义模型输入的图像尺寸
     height = 360
     width = 640
+
+    # 初始化距离和轨迹列表，前两帧没有检测结果
     dists = [-1] * 2
     ball_track = [(None, None)] * 2
+
+    # 添加视频写入准备
     output_video = []
     for num in tqdm(range(2, len(frames))):
+        # 获取原始帧尺寸
         original_frame = frames[num]
         orig_height, orig_width = original_frame.shape[:2]
 
@@ -63,9 +70,9 @@ def infer_model(frames, model, fps):  # 添加fps参数
         inp = np.expand_dims(imgs, axis=0)
         out = model(torch.from_numpy(inp).float().to(device))
         output = out.argmax(dim=1).detach().cpu().numpy()
-
-        scale_x = orig_width / width
-        scale_y = orig_height / height
+        # 计算坐标缩放比例
+        scale_x = orig_width / width  # 宽度缩放因子
+        scale_y = orig_height / height  # 高度缩放因子
 
         x_pred, y_pred = postprocess(output, scale_x, scale_y)
         ball_track.append((x_pred, y_pred))
@@ -75,59 +82,39 @@ def infer_model(frames, model, fps):  # 添加fps参数
         else:
             dist = -1
         dists.append(dist)
-
-        # 生成预览帧
+        # 创建实时预览帧
         preview_frame = frames[num].copy()
-
-        # 获取当前坐标
+        # 添加坐标显示
+        # 获取当前帧坐标
         current_x, current_y = x_pred, y_pred
 
-        # 生成坐标文本
-        coord_line = f"X: {current_x:.1f}" if current_x else "X: NaN"
-        coord_line += f"  Y: {current_y:.1f}" if current_y else "  Y: NaN"
+        # 坐标文本格式化
+        coord_text = f"X: {current_x:.1f}" if current_x else "X: NaN"
+        coord_text += f"  Y: {current_y:.1f}" if current_y else "  Y: NaN"
 
-        # 计算速度
-        current_dist = dists[num]
-        if current_dist != -1 and current_x is not None and current_y is not None and ball_track[num - 1][
-            0] is not None:
-            speed = current_dist * fps
-            speed_line = f"Speed: {speed:.1f} px/s"
-        else:
-            speed_line = "Speed: N/A"
-
-        # 设置显示参数
+        # 绘制坐标信息
         text_scale = 1.2
         text_thickness = 2
         text_color = (255, 255, 255)
         bg_color = (40, 40, 40)
 
-        # 计算文本尺寸
-        (coord_width, coord_height), _ = cv2.getTextSize(coord_line, cv2.FONT_HERSHEY_SIMPLEX, text_scale,
-                                                         text_thickness)
-        (speed_width, speed_height), _ = cv2.getTextSize(speed_line, cv2.FONT_HERSHEY_SIMPLEX, text_scale,
-                                                         text_thickness)
-        max_width = max(coord_width, speed_width)
-        total_height = coord_height + speed_height + 5
+        # 计算文字区域尺寸
+        (text_width, text_height), _ = cv2.getTextSize(
+            coord_text, cv2.FONT_HERSHEY_SIMPLEX, text_scale, text_thickness)
 
-        # 绘制背景
+        # 绘制背景矩形
         cv2.rectangle(preview_frame,
                       (10, 10),
-                      (20 + max_width, 20 + total_height),
+                      (20 + text_width, 20 + text_height * 2),
                       bg_color, -1)
 
-        # 绘制坐标行
-        cv2.putText(preview_frame, coord_line,
-                    (20, 20 + coord_height),
+        # 绘制坐标文字
+        cv2.putText(preview_frame, coord_text,
+                    (20, 20 + text_height),
                     cv2.FONT_HERSHEY_SIMPLEX, text_scale,
                     text_color, text_thickness)
 
-        # 绘制速度行
-        cv2.putText(preview_frame, speed_line,
-                    (20, 20 + coord_height + 5 + speed_height),
-                    cv2.FONT_HERSHEY_SIMPLEX, text_scale,
-                    text_color, text_thickness)
-
-        # 绘制轨迹
+        # 绘制实时轨迹（最近3帧）
         for i in range(10):
             idx = num - i
             if idx >= 0 and ball_track[idx][0]:
@@ -136,59 +123,52 @@ def infer_model(frames, model, fps):  # 添加fps参数
                            (int(ball_track[idx][0]), int(ball_track[idx][1])),
                            radius=3, color=color, thickness=-1)
 
-        # 显示预览
+        # 实时显示
         # cv2.imshow("Processing Preview", cv2.resize(preview_frame, (orig_width, orig_height)))
         output_video.append(preview_frame)
 
+        # 按ESC可提前终止
         if cv2.waitKey(1) == 27:
             break
 
     cv2.destroyAllWindows()
-    return ball_track, dists, output_video
+    return ball_track, dists, output_video  # 修改返回值
 
 
 def remove_outliers(ball_track, dists, max_dist=100):
-    """ Remove outliers from model prediction
-    :params
-        ball_track: list of detected ball points
-        dists: list of euclidean distances between two neighbouring ball points
-        max_dist: maximum distance between two neighbouring ball points
-    :return
-        ball_track: list of ball points
+    """
+    从模型预测中移除离群点。
+    如果一个点与前一个点的距离超过阈值，则视为离群点。
+
+    :param ball_track: 检测到的球点坐标列表
+    :param dists: 相邻球点之间的欧氏距离列表
+    :param max_dist: 两个相邻球点之间的最大允许距离
+    :return: 清理后的球点坐标列表
     """
     outliers = list(np.where(np.array(dists) > max_dist)[0])
-    # Create a copy to safely iterate while modifying
-    outliers_copy = outliers.copy()
-
-    for i in outliers_copy:
-        # Check if i+1 is within bounds
-        if i + 1 < len(dists):
-            if (dists[i + 1] > max_dist) | (dists[i + 1] == -1):
-                ball_track[i] = (None, None)
-                if i in outliers:  # Check if still in list before removing
-                    outliers.remove(i)
-        # Handle case where i is at the end of the list
-        elif i == len(dists) - 1:
+    # 简单的离群点判断逻辑：如果当前点和后一个点的距离都很大，则将当前点移除
+    for i in outliers:
+        if (dists[i + 1] > max_dist) | (dists[i + 1] == -1):
             ball_track[i] = (None, None)
-
-        # Check bounds before accessing i-1
-        if i > 0 and dists[i - 1] == -1:
+            outliers.remove(i)
+        elif dists[i - 1] == -1:
             ball_track[i - 1] = (None, None)
-
     return ball_track
 
 
 def split_track(ball_track, max_gap=4, max_dist_gap=80, min_track=5):
-    """ Split ball track into several subtracks in each of which we will perform
-    ball interpolation.
-    :params
-        ball_track: list of detected ball points
-        max_gap: maximun number of coherent None values for interpolation
-        max_dist_gap: maximum distance at which neighboring points remain in one subtrack
-        min_track: minimum number of frames in each subtrack
-    :return
-        result: list of subtrack indexes
     """
+    将完整的球轨迹分割成多个子轨迹，用于后续的插值处理。
+    分割的依据是连续未检测到球的帧数（gap）或两段轨迹间的距离。
+
+    :param ball_track: 球点坐标列表
+    :param max_gap: 允许插值的最大连续None值数量
+    :param max_dist_gap: 两个子轨迹端点之间的最大平均距离
+    :param min_track: 一个有效子轨迹所需的最短帧数
+    :return: result: 一个包含每个子轨迹起始和结束索引的列表
+    """
+
+    # 0表示检测到，1表示未检测到(None)
     list_det = [0 if x[0] else 1 for x in ball_track]
     groups = [(k, sum(1 for _ in g)) for k, g in groupby(list_det)]
 
@@ -209,11 +189,11 @@ def split_track(ball_track, max_gap=4, max_dist_gap=80, min_track=5):
 
 
 def interpolation(coords):
-    """ Run ball interpolation in one subtrack
-    :params
-        coords: list of ball coordinates of one subtrack
-    :return
-        track: list of interpolated ball coordinates of one subtrack
+    """
+    在一个子轨迹内部进行线性插值，填补缺失的球坐标。
+
+    :param coords: 一个子轨迹的球坐标列表（包含None值）
+    :return: track: 插值后的球坐标列表
     """
 
     def nan_helper(y):
@@ -232,24 +212,28 @@ def interpolation(coords):
 
 
 def write_track(frames, ball_track, path_output_video, fps, trace=7):
-    """ Write .avi file with detected ball tracks
-    :params
-        frames: list of original video frames
-        ball_track: list of ball coordinates
-        path_output_video: path to output video
-        fps: frames per second
-        trace: number of frames with detected trace
     """
-    height, width = frames[0].shape[:2]
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')  # 或者尝试 *'h264'/*'X264'
-    out = cv2.VideoWriter(path_output_video, fourcc, fps, (width, height))
+    将带有检测轨迹的帧写入一个新的.avi视频文件。
+    注意：在这个版本中，输入的`frames`已经是带有轨迹预览的帧了。
+    这个函数可以直接将这些处理过的帧写入视频。
 
+    :param frames: 带有轨迹的视频帧列表
+    :param ball_track: 球坐标列表 (在此实现中未使用，因为轨迹已绘制在frames上)
+    :param path_output_video: 输出视频的路径
+    :param fps: 视频的帧率
+    :param trace: 轨迹的长度 (在此实现中未使用)
+    """
+
+    height, width = frames[0].shape[:2]
+    out = cv2.VideoWriter(path_output_video, cv2.VideoWriter_fourcc(*'DIVX'),
+                          fps, (width, height))
     for frame in frames:
         out.write(frame)
     out.release()
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=2, help='batch size')
     parser.add_argument('--model_path', type=str, help='path to model')
@@ -257,6 +241,7 @@ if __name__ == '__main__':
     parser.add_argument('--video_out_path', type=str, help='path to output video')
     parser.add_argument('--extrapolation', action='store_true', help='whether to use ball track extrapolation')
     parser.add_argument('--json_out_path', type=str, help='path to output JSON file for ball trajectory')
+
     args = parser.parse_args()
 
     model = BallTrackerNet()
@@ -266,8 +251,7 @@ if __name__ == '__main__':
     model.eval()
 
     frames, fps = read_video(args.video_path)
-    ball_track, dists, processed_frames = infer_model(frames, model, fps)
-
+    ball_track, dists, processed_frames = infer_model(frames, model)  # 获取处理后的帧
     ball_track = remove_outliers(ball_track, dists)
 
     if args.extrapolation:
@@ -276,7 +260,6 @@ if __name__ == '__main__':
             ball_subtrack = ball_track[r[0]:r[1]]
             ball_subtrack = interpolation(ball_subtrack)
             ball_track[r[0]:r[1]] = ball_subtrack
-
     # 如果指定了JSON输出路径，将轨迹保存为JSON
     if args.json_out_path:
         # 创建轨迹数据结构

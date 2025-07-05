@@ -1,0 +1,6 @@
+balldetect_pos_vel文件夹
+包含了用于检测乒乓球位置和速度的Python脚本。该脚本使用OpenCV库来处理视频流，并通过图像处理技术来识别篮球的位置和速度。
+ball_detect.py用于进行乒乓球轨迹跟踪和速度计算
+ball_detect.pt基于TrackNet训练的模型文件
+utils/general_back.py包含推理和后处理
+utils/model.py定义了TrackNet模型的结构

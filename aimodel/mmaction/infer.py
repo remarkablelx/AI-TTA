@@ -1,4 +1,4 @@
-# segmented_multi_person_recognition.py
+# infer.py
 import argparse
 import json
 import os
@@ -14,7 +14,6 @@ from mmengine.runner import load_checkpoint
 from mmaction.apis import init_recognizer, inference_recognizer
 from mmaction.datasets.transforms import PackActionInputs
 
-# 用于可视化的颜色列表 (BGR格式，因为OpenCV使用BGR)
 PERSON_COLORS_BGR = [
     (34, 139, 34), (255, 0, 0), (0, 0, 255),
     (0, 255, 255), (255, 255, 0), (255, 0, 255)
@@ -22,46 +21,36 @@ PERSON_COLORS_BGR = [
 
 
 def parse_args():
-    """解析命令行参数"""
     parser = argparse.ArgumentParser(description='Multi-person, Segment-based Action Recognition with Video Annotation')
-    # --- 推理相关参数 ---
     parser.add_argument(
         '--config',
-        default='E:/fwwb/mmaction2-main/configs/skeleton/stgcn/stgcn_8xb16-pingpong-2d.py',
         help='模型配置文件的路径'
     )
     parser.add_argument(
         '--checkpoint',
-        default='E:/fwwb/mmaction2-main/work_dirs/stgcn_pingpong_v3/best_acc_top1_epoch_65.pth',
         help='模型权重文件的路径'
     )
     parser.add_argument(
         '--pose-json',
-        default='E:/fwwb/mmaction2-main/data/test/results_valid1.json',
         help='包含完整视频骨骼点数据的JSON文件路径'
     )
     parser.add_argument(
         '--segments-json',
-        default='E:/fwwb/mmaction2-main/data/inference_input_from_ball_reversal.json',
         help='包含视频分段信息的JSON文件路径'
     )
     parser.add_argument(
         '--class-names-file',
-        default='E:/fwwb/mmaction2-main/data/action.txt',
         help='类别名称文件的路径'
     )
     # --- 视频标注相关参数 ---
     parser.add_argument(
         '--video-input',
-        default='E:/fwwb/mmpose-main/data/shixun/trainsx/valid1.mp4',
         help='输入视频文件的路径'
     )
     parser.add_argument(
         '--video-output',
-        default='E:/fwwb/mmaction2-main/data/rec_result/annotated_video.mp4',
         help='输出标注视频的路径'
     )
-    # --- 其他参数 ---
     parser.add_argument(
         '--device',
         type=str,
@@ -79,7 +68,7 @@ def parse_args():
 
 
 def calculate_iou(boxA, boxB):
-    """计算两个边界框的交并比(IoU)"""
+    # 计算两个边界框的交并比(IoU)
     if not isinstance(boxA, (list, np.ndarray)) or len(boxA) < 4 or not isinstance(boxB, (list, np.ndarray)) or len(
             boxB) < 4:
         return 0.0
@@ -91,7 +80,7 @@ def calculate_iou(boxA, boxB):
 
 
 def track_people_by_iou(frame_data_map, total_frames, iou_threshold=0.4):
-    """使用IoU对检测到的人进行追踪"""
+    # 使用IoU对检测到的人进行追踪
     print("正在通过IoU追踪人员...")
     tracks, next_person_id, person_tracks = [], 0, defaultdict(dict)
     for frame_id in tqdm(range(total_frames), desc="追踪进度"):
@@ -127,7 +116,7 @@ def track_people_by_iou(frame_data_map, total_frames, iou_threshold=0.4):
 
 
 def visualize_and_save(video_path, output_path, person_tracks, recognition_results):
-    """将识别结果绘制到视频上并保存"""
+    # 将识别结果绘制到视频上并保存
     print(f"开始生成标注视频: {output_path}")
 
     # 1. 加载视频
@@ -152,9 +141,7 @@ def visualize_and_save(video_path, output_path, person_tracks, recognition_resul
         print("警告: 未找到'simhei.ttf'字体，将使用Pillow的默认字体，中文可能无法显示。")
         font = ImageFont.load_default()
 
-    # --- 修正: 处理重叠片段的逻辑 ---
     # 4. 重构识别结果为按帧查找的格式，并解决重叠问题
-    # action_timeline 存储: {frame_idx: {person_id: (label_text, confidence_score)}}
     action_timeline = defaultdict(dict)
     for res in recognition_results:
         person_id = res['person_id']
@@ -173,7 +160,6 @@ def visualize_and_save(video_path, output_path, person_tracks, recognition_resul
         if not ret:
             break
 
-        # 将OpenCV帧(BGR)转换为Pillow Image(RGB)以便绘制中文
         pil_img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         draw = ImageDraw.Draw(pil_img)
 
@@ -185,7 +171,6 @@ def visualize_and_save(video_path, output_path, person_tracks, recognition_resul
                 x1, y1, x2, y2 = map(int, bbox)
 
                 color = PERSON_COLORS_BGR[person_id % len(PERSON_COLORS_BGR)]
-                # Pillow使用RGB，所以需要转换颜色
                 color_rgb = (color[2], color[1], color[0])
 
                 # 绘制边界框
@@ -204,7 +189,6 @@ def visualize_and_save(video_path, output_path, person_tracks, recognition_resul
                     # 绘制文字
                     draw.text((x1 + 4, y1 - text_h - 10), display_text, font=font, fill=(255, 255, 255))
 
-        # 将Pillow Image转换回OpenCV帧
         processed_frame = cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
         writer.write(processed_frame)
 
@@ -215,10 +199,9 @@ def visualize_and_save(video_path, output_path, person_tracks, recognition_resul
 
 
 def main():
-    """主函数"""
     args = parse_args()
 
-    # --- 1. 初始化模型和加载数据 ---
+    # 初始化模型和加载数据
     print("正在初始化模型...")
     model = init_recognizer(args.config, args.checkpoint, device=args.device)
     print("正在加载数据...")
@@ -234,10 +217,10 @@ def main():
         video_info = full_pose_data['meta_info']['video_info']
         img_height, img_width = video_info.get('height', 1080), video_info.get('width', 1920)
 
-    # --- 2. 人员追踪 ---
+    # 人员追踪
     person_tracks = track_people_by_iou(frame_data_map, total_frames, args.iou_threshold)
 
-    # --- 3. 对每个人的每个分段进行推理 ---
+    # 对每个人的每个分段进行推理
     all_results = []
     print(f"开始对 {len(segments_data)} 个分段和 {len(person_tracks)} 个人员进行推理...")
     with open(args.class_names_file, 'r', encoding='utf-8') as f:
@@ -273,13 +256,13 @@ def main():
                 "confidence_score": float(pred_scores[top1_idx]),
             })
 
-    # --- 4. 将结果保存为JSON文件 (可选，但推荐保留) ---
+    # 将结果保存为JSON文件
     output_json_path = os.path.join(os.path.dirname(args.video_output), 'multi_person_recognition_results.json')
     with open(output_json_path, 'w', encoding='utf-8') as f:
         json.dump(all_results, f, indent=4, ensure_ascii=False)
     print(f"\n推理JSON结果已保存至: {output_json_path}")
 
-    # --- 5. 将结果绘制到视频上并保存 ---
+    # 将结果绘制到视频上并保存
     visualize_and_save(args.video_input, args.video_output, person_tracks, all_results)
 
 
