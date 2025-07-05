@@ -14,6 +14,10 @@ const goToAnalysis = () => {
 const goToLogin = () => {
   router.push('/login')
 }
+
+const goToAdmin = () => {
+  router.push('/admin')
+}
 </script>
 
 <template>
@@ -30,7 +34,8 @@ const goToLogin = () => {
       <!-- 操作按钮组 -->
       <div class="action-buttons">
        <button class="btn analysis-btn" @click="goToAnalysis">开 始 分 析</button>
-        <button class="btn login-btn" @click="goToLogin">登录 / 注册</button>
+       <button class="btn login-btn" @click="goToLogin">登录 / 注册</button>
+<!--       <button class="btn admin-btn" @click="goToAdmin">管理员登录</button>-->
       </div>
     </div>
   </div>

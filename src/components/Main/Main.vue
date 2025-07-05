@@ -15,6 +15,9 @@
       <transition name="fade" @before-enter="beforeEnter" @enter="enter" @leave="leave">
         <History v-if="isHistoryVisible" />
       </transition>
+      <transition name="fade" @before-enter="beforeEnter" @enter="enter" @leave="leave">
+        <Analysis v-if="isAnalysisVisible" />
+      </transition>
     </div>
   </div>
 </template>
@@ -23,18 +26,20 @@
 import NavBar from '@/components/Main/NavBar.vue';
 import UserInfo from '@/components/Main/UserInfo.vue';
 import History from '@/components/Main/History.vue';
-
+import Analysis from "@/components/Main/Analysis.vue";
 export default {
   components: {
     NavBar,
     UserInfo,
     History,
+    Analysis,
   },
   data() {
     return {
       isCollapsed: false,
       isUserInfoVisible: false,
       isHistoryVisible: false,
+      isAnalysisVisible: false,
     };
   },
   methods: {
@@ -44,10 +49,16 @@ export default {
     toggleView(view) {
       if (view === 'history') {
         this.isUserInfoVisible = false;
+        this.isAnalysisVisible = false;
         this.isHistoryVisible = !this.isHistoryVisible;
       } else if (view === 'userInfo') {
         this.isHistoryVisible = false;
+        this.isAnalysisVisible = false;
         this.isUserInfoVisible = !this.isUserInfoVisible;
+      } else if(view === 'analysis'){
+        this.isUserInfoVisible = false;
+        this.isHistoryVisible = false;
+        this.isAnalysisVisible = !this.isAnalysisVisible;
       }
     },
     // 过渡钩子

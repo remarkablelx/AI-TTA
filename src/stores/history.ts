@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { useAuthStore } from './auth'
+import { useUserStore } from './auth2.ts'
 
 // 定义历史记录项的类型
 interface HistoryItem {
@@ -26,7 +26,7 @@ const generateMockData = (): HistoryItem[] => {
 }
 
 export const useHistoryStore = defineStore('history', () => {
-  const auth = useAuthStore()
+  const auth = useUserStore()
 
   // 状态变量
   const historyItems = ref<HistoryItem[]>([])  // 历史记录数组

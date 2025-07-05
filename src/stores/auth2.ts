@@ -11,7 +11,7 @@ interface UserInfo {
 }
 
 // 定义 Store
-export const useAuthStore = defineStore('auth', () => {
+export const useUserStore = defineStore('auth', () => {
   // 登录状态，初始化时根据 localStorage 判断是否存在 JWT
   const isLoggedIn = ref<boolean>(!!localStorage.getItem('jwt'))
 

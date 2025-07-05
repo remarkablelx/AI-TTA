@@ -45,7 +45,7 @@ export const registerUser = async (account: string, password: string, captcha_id
   }
 };
 
-// 密码登录API
+// 用户密码登录API
 export const password_loginUser = async (account: string, password: string,) => {
 try {
     const response = await api.post('/user/password_login', {
@@ -59,7 +59,7 @@ try {
 };
 
 
-// 验证码登录API
+// 用户验证码登录API
 export const captcha_loginUser = async (account: string, captcha_id: string, smsCode: string) => {
     try {
     const response = await api.post('/user/captcha_login', {
@@ -70,6 +70,19 @@ export const captcha_loginUser = async (account: string, captcha_id: string, sms
     return response.data;
   } catch (error) {
     throw new Error('验证码登录请求失败');
+  }
+};
+
+// 用户密码登录API
+export const adminLogin = async (account: string, password: string,) => {
+try {
+    const response = await api.post('/admin/login', {
+      account,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('密码登录请求失败');
   }
 };
 
@@ -95,7 +108,7 @@ export const get_personalInfo = async (token: string) => {
 
 
 // 修改个人信息的 API
-export const update_personalInfo = async (token:string, nickname:string,avatar:string,sex:int,email:string,note:string) => {
+export const update_personalInfo = async (token:string, nickname:string,avatar:string,sex:number,email:string,note:string) => {
   try {
     // 发起 POST 请求
     const response = await api.post('/user/update_personal_info', {
@@ -119,7 +132,7 @@ export const update_personalInfo = async (token:string, nickname:string,avatar:s
   }
 };
 
-// 修改个人信息的 API
+// 注销账户的 API
 export const cancel_account = async (token:string, captcha_id: string, smsCode: string) => {
   try {
     // 发起 POST 请求
@@ -161,5 +174,107 @@ export const set_password = async (token:string, new_password:string, captcha_id
   } catch (error) {
     console.error('重置时出错:', error);
     throw error;
+  }
+};
+
+
+// 获取历史记录的API
+export const get_allRecord = async (user_id:number,page_num:number,page_size:number) => {
+try {
+    const response = await api.post('/record/all_record', {
+      user_id,
+      page_num,
+      page_size
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('历史记录请求失败');
+  }
+};
+
+// 新增历史记录的API
+export const add_record = async (video_id: number,user_id:number) => {
+try {
+    const response = await api.post('/record/add_record', {
+      video_id,
+      user_id,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('增填记录请求失败');
+  }
+};
+
+// 查看单个分析记录
+export const get_record = async (record_id:number) => {
+try {
+    const response = await api.post('/record/get_record', {
+      record_id,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('查看单个记录请求失败');
+  }
+};
+
+// 修改分析记录
+export const set_record = async (record_id:number,state:number,video_name:string,expiration_time:string) => {
+try {
+    const response = await api.post('/record/set_record', {
+      record_id,
+      state,
+      video_name,
+      expiration_time,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('修改分析记录请求失败');
+  }
+};
+
+// 删除分析记录
+export const delete_record = async (record_id:number) => {
+try {
+    const response = await api.post('/record/delete_record', {
+      record_id,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('删除分析记录请求失败');
+  }
+};
+
+// 筛选分析记录
+export const search_record = async (user_id:number,search:string,state:string,sort:number,page_num:number,page_size:number) => {
+try {
+    const response = await api.post('/record/search_record', {
+      user_id,
+      search,
+      state,
+      sort,
+      page_num,
+      page_size,
+
+    });
+    return response.data;
+  } catch (error) {
+    console.log('筛选分析记录请求失败'+error)
+    throw new Error('筛选分析记录请求失败');
+  }
+};
+
+
+// 上传视频接口
+export const upload_video = async (video_path:string,video_name:string) => {
+try {
+    const response = await api.post('/video/upload_video', {
+      video_path,
+      video_name,
+
+    });
+    return response.data;
+  } catch (error) {
+    console.log('上传视频请求失败'+error)
+    throw new Error('上传视频请求失败');
   }
 };

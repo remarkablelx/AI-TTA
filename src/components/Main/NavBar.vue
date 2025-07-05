@@ -1,7 +1,7 @@
 <script>
 import { computed, onMounted } from 'vue'
 import logo from '@/components/Home/Logo.vue'
-import { useAuthStore } from '@/stores/auth' // 导入身份验证
+import { useUserStore } from '@/stores/auth2.js' // 导入身份验证
 import { useHistoryStore } from '@/stores/history' // 导入历史记录
 import axios from 'axios'
 
@@ -95,10 +95,13 @@ export default {
       else if (tab.id === 'user-information') {
         this.$emit('toggle-view', 'userInfo'); // 显示用户信息
       }
+      else if (tab.id === 'analysis-view') {
+        this.$emit('toggle-view', 'analysis'); // 显示用户信息
+      }
     },
   },
   setup() {
-    const authStore = useAuthStore() // 初始化身份验证
+    const authStore = useUserStore() // 初始化身份验证
     const historyStore = useHistoryStore()  //初始化历史记录
 
     onMounted(() => {
@@ -172,7 +175,6 @@ export default {
         class="nav-item"
         :class="{
           active: activeTab === tab.id,
-          'disabled': tab.id === 'analysis-view' && !hasHistory
         }"
         @click="handleTabClick(tab)"
       >

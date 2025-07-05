@@ -1,144 +1,171 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { get_allRecord, add_record, set_record, delete_record, search_record } from "@/api/api.ts";
+import { useUserStore } from "@/stores/userStore.ts";
 
-// 示例数据，包含历史记录
-const records = ref([
-  { time: '2025-7-1 15:44:56', name: '视频1', status: '分析中', validity: '2025-07-08' },
-  { time: '2025-5-15 19:18:29', name: '视频2', status: '已完成', validity: '2025-05-22' },
-  { time: '2025-4-23 20:32:43', name: '视频3', status: '已完成', validity: '2025-04-30' },
-  { time: '2025-4-23 10:34:08', name: '视频4', status: '已完成', validity: '2025-04-30' },
-  { time: '2025-4-23 10:10:22', name: '视频5', status: '已完成', validity: '2025-04-30' },
-  { time: '2025-4-21 22:17:12', name: '视频6', status: '已完成', validity: '2025-04-28' },
-  { time: '2025-4-19 13:13:02', name: '视频7', status: '已失效', validity: '2025-04-26' },
-  { time: '2025-4-19 09:33:17', name: '视频8', status: '已失效', validity: '2025-04-26' }
-]);
+// 获取 Pinia store
+const userStore = useUserStore();
 
-// 筛选和排序相关的状态和变量
-const searchQuery = ref('');
-const selectedStatus = ref('状态');
-const sortByTime = ref('asc');
-const sortByValidity = ref('asc');
+// 示例状态和变量
+const records = ref([]); // 存储获取的历史记录
+const user_id = userStore.userInfo.user_id;
+const page_num = ref(1); // 页码
+const page_size = ref(20); // 每页条数
 
-// 计算和过滤后的记录
-const filteredAndSortedRecords = computed(() => {
-  let result = records.value;
-
-  // 搜索过滤
-  if (searchQuery.value) {
-    result = result.filter(item =>
-      item.time.includes(searchQuery.value) ||
-      item.name.includes(searchQuery.value) ||
-      item.status.includes(searchQuery.value)
-    );
+// 获取历史记录
+const fetchRecords = async () => {
+  try {
+    const data = await get_allRecord(user_id, page_num.value, page_size.value);
+    records.value = data.records; // 假设返回的数据中包含 records
+    console.log('历史记录请求成功:', records.value);
+  } catch (error) {
+    console.error('历史记录请求失败:', error);
   }
+};
 
-  // 状态筛选
-  if (selectedStatus.value && selectedStatus.value !== '状态') {
-    result = result.filter(item => item.status === selectedStatus.value);
+
+// 新增历史记录
+const addRecord = async (video_id: number) => {
+  try {
+    const response = await add_record(video_id, user_id); // user_id 从 Pinia store 获取
+    if (response.success) {
+      console.log('记录添加成功');
+      fetchRecords(); // 重新获取记录，刷新视图
+    } else {
+      console.error('记录添加失败');
+    }
+  } catch (error) {
+    console.error('新增历史记录失败:', error);
   }
+};
 
-// 分析时间排序：按年、月、日、小时、分钟、秒进行排序
-  if (sortByTime.value === 'asc') {
-    result = result.sort((a, b) => {
-      const dateA = new Date(a.time);
-      const dateB = new Date(b.time);
-      // 确保时间解析正确
-      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-        console.error("日期格式错误：", a.time, b.time);  // 打印出错的时间格式
-        return 0;  // 不进行排序
-      }
-      return dateA.getTime() - dateB.getTime();
-    });
-  } else {
-    result = result.sort((a, b) => {
-      const dateA = new Date(a.time);
-      const dateB = new Date(b.time);
-      // 确保时间解析正确
-      if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-        console.error("日期格式错误：", a.time, b.time);  // 打印出错的时间格式
-        return 0;  // 不进行排序
-      }
-      return dateB.getTime() - dateA.getTime();
-    });
+// 修改分析记录
+const updateRecord = async (record_id: number, state: number, video_name: string, expiration_time: string) => {
+  try {
+    const response = await set_record(record_id, state, video_name, expiration_time);
+    if (response.success) {
+      console.log('记录更新成功');
+      fetchRecords(); // 更新记录后重新获取并刷新
+    } else {
+      console.error('记录更新失败');
+    }
+  } catch (error) {
+    console.error('修改分析记录失败:', error);
   }
+};
 
-  // 有效期排序：按年月日时间优先级进行排序
-  if (sortByValidity.value === 'asc') {
-    result = result.sort((a, b) => new Date(a.validity) - new Date(b.validity));
-  } else {
-    result = result.sort((a, b) => new Date(b.validity) - new Date(a.validity));
+// 删除分析记录
+const deleteRecord = async (record_id: number) => {
+  try {
+    const response = await delete_record(record_id);
+    if (response.success) {
+      console.log('记录删除成功');
+      fetchRecords(); // 删除记录后重新获取并刷新
+    } else {
+      console.error('记录删除失败');
+    }
+  } catch (error) {
+    console.error('删除分析记录失败:', error);
   }
+};
 
-  return result;
+// 筛选分析记录
+const searchRecords = async (search: string, state: string, sort: number) => {
+  try {
+    const data = await search_record(user_id, search, state, sort, page_num.value, page_size.value);
+    records.value = data.records;  // 假设返回的数据中包含 records
+    console.log('筛选记录成功:', records.value);
+  } catch (error) {
+    console.error('筛选分析记录失败:', error);
+  }
+};
+
+
+
+// 映射状态值到文本
+const getStatusText = (status: number) => {
+  switch (status) {
+    case 0:
+      return '分析中';
+    case 1:
+      return '已完成';
+    case 2:
+      return '已失效';
+    default:
+      return '未知状态';
+  }
+};
+
+// 映射状态值到样式
+const getStatusClass = (status: number) => {
+  switch (status) {
+    case 0:
+      return 'status-processing'; // 分析中
+    case 1:
+      return 'status-completed'; // 已完成
+    case 2:
+      return 'status-expired'; // 已失效
+    default:
+      return '';
+  }
+};
+
+
+// 组件加载时调用 fetchRecords
+onMounted(() => {
+  fetchRecords();
 });
-
-// 切换分析时间排序
-const toggleTimeSort = () => {
-  sortByTime.value = sortByTime.value === 'asc' ? 'desc' : 'asc';
-};
-
-// 切换有效期排序
-const toggleValiditySort = () => {
-  sortByValidity.value = sortByValidity.value === 'asc' ? 'desc' : 'asc';
-};
 </script>
 
 <template>
   <div class="container">
     <h2>历史记录</h2>
 
-    <!-- 搜索框 -->
-    <div class="search-bar">
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="搜索时间（按下方显示格式）、名称或状态"
-      />
-    </div>
-
     <!-- 表格头部 -->
     <div class="virtual-header">
-      <div class="time-col" @click="toggleTimeSort">
+      <div class="time-col">
         <span>分析时间</span>
       </div>
       <div>视频名称</div>
       <div>
-        <select v-model="selectedStatus" class="filter-dropdown">
+        <select class="filter-dropdown" @change="searchRecords">
           <option value="状态">状态</option>
           <option value="分析中">分析中</option>
           <option value="已完成">已完成</option>
           <option value="已失效">已失效</option>
         </select>
       </div>
-      <div class="expiry-indicator" @click="toggleValiditySort">
+      <div class="expiry-indicator">
         <span>有效期</span>
       </div>
       <div>操作</div>
     </div>
 
-    <!-- 显示历史记录 -->
-    <div v-for="(record, index) in filteredAndSortedRecords" :key="index" class="history-item">
+ <!-- 显示历史记录 -->
+    <div v-for="record in records" :key="record.id" class="history-item">
       <div class="time-col">{{ record.time }}</div>
-      <div>{{ record.name }}</div>
+      <div>{{ record.video_name }}</div>
       <div>
-        <span class="status-badge" :class="{
-          'status-processing': record.status === '分析中',
-          'status-completed': record.status === '已完成',
-          'status-expired': record.status === '已失效'
-        }">{{ record.status }}</span>
+        <span :class="['status-badge', getStatusClass(record.state)]">{{ getStatusText(record.state) }}</span>
       </div>
       <div class="expiry-indicator">
-        <span :class="{'expiring-soon': new Date(record.validity) < new Date()}">
-          {{ record.validity }}
-        </span>
+        <span>{{ record.expiration_time }}</span>
       </div>
       <div>
-        <button class="check-btn">查看</button>
-        <button class="delete-btn">删除</button>
+        <button class="check-btn" @click="updateRecord(record.id, 1, record.video_name, record.expiration_time)">更新</button>
+        <button class="delete-btn" @click="deleteRecord(record.id)">删除</button>
       </div>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination">
+      <button @click="page_num > 1 && (page_num -= 1); fetchRecords()">上一页</button>
+      <span>页码: {{ page_num }}</span>
+      <button @click="page_num += 1; fetchRecords()">下一页</button>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 
@@ -302,6 +329,23 @@ const toggleValiditySort = () => {
     font-size: 80%;
   }
 }
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
 
+.pagination button {
+  background-color: #2c3e50;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.pagination button:hover {
+  background-color: #34495e;
+}
 
 </style>

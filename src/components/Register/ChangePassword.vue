@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import logo from "@/components/Home/Logo.vue";
-import {getCaptcha,set_password} from "@/api/api.js";
+import { getCaptcha, set_password } from "@/api/api.js";
 import { useUserStore } from '@/stores/userStore.js';  // 导入状态管理
 
 const router = useRouter()
@@ -12,9 +12,11 @@ const phone = ref('');              // 手机号
 const smsCode = ref('');            // 用户输入验证码
 const captchaId = ref('');          // 验证码 ID
 const captchaText = ref('');        // 验证码文本
+
 // 获取用户 store 和 token
 const userStore = useUserStore();
 const token = userStore.token; // 获取 token
+
 // 获取验证码
 const getSmsCode = async () => {
   try {
@@ -34,16 +36,43 @@ const getSmsCode = async () => {
     alert('验证码报错');
   }
 };
-// 处理请求
 
-const handleReset = () => {
+// 重置密码请求
+const handleReset = async () => {
   if (newPassword.value !== confirmPassword.value) {
     alert('两次输入的密码不一致')
     return
   }
-  router.push('/login')
+
+  if (!newPassword.value || !confirmPassword.value || !phone.value || !smsCode.value) {
+    alert('请填写所有必填项')
+    return
+  }
+
+  // 调用后端接口修改密码
+  try {
+    const response = await set_password({
+      token: token,
+      captcha_id: captchaId.value,
+      sms_code: smsCode.value,
+    })
+
+    if (response.code === '0') {
+      alert('密码修改成功')
+      await router.push('/login')
+    } else {
+      alert('密码修改失败: ' + response.message)
+    }
+  } catch (error) {
+    console.error('修改密码错误:', error)
+    alert('修改密码失败，请重试')
+  }
 }
 </script>
+
+
+
+
 
 <template>
   <div class="login-container">

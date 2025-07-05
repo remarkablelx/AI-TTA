@@ -47,8 +47,8 @@
 /* 基础按钮样式 */
 .btn {
   position: relative;
-  padding: 1.2rem 1.5rem;  /* 增大按钮的内边距 */
-  font-size: 1.2rem;  /* 增大按钮字体 */
+  padding: 1.2rem 1.5rem;  /* 增大按钮大小，减小内边距 */
+  font-size: 1.2rem;  /* 保持较小的字体 */
   border: none;
   border-radius: 50px;
   cursor: pointer;

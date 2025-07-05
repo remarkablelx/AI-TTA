@@ -8,6 +8,13 @@ import History from "@/components/Main/History.vue";
 import Video from"@/components/Main/AnalysisVideo.vue"
 import UserInfo2 from "@/components/Main/UserInfo2.vue";
 import UserInfo3 from "@/components/Main/UserInfo3.vue";
+import AnalysisTabs from "@/components/Main/AnalysisTabs.vue";
+import FramePanel from "@/components/Main/FramePanel.vue";
+import VideoComparator from "@/components/Main/VideoComparator.vue";
+import Analysis from "@/components/Main/Analysis.vue";
+import AdminLogin from "@/components/Admin/AdminLogin.vue";
+import Admin from "@/components/Admin/Admin.vue";
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -45,6 +52,26 @@ const router = createRouter({
       path:'/userinfo',
       name:'userinfo',
       component: UserInfo3
+    },
+    {
+      path:'/1',
+      name:'1',
+      component: AnalysisTabs
+    },
+    {
+      path:'/2',
+      name:'2',
+      component: Analysis
+    },
+    {
+      path:'/adminLogin',
+      name:'adminLogin',
+      component: AdminLogin
+    },
+    {
+      path:'/admin',
+      name:'admin',
+      component: Admin
     }
   ],
 })

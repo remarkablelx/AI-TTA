@@ -60,14 +60,20 @@ const handlePasswordLogin = async () => {
     if (response.code === '0') {  // 后端返回登录成功
       const nickname = response.nickname || '默认昵称';
       const avatar = response.avatar || '默认头像';
-      const token = response.token ;
-      const user_id =  response.user_id ;
       const userStore = useUserStore();
+      const user_id = response.user_id || ''; // 获取用户 id
+      const account = response.account || ''; // 获取用户账号
+
       userStore.setToken(response.token); // 存储 token 和更新登录状态
+      userStore.setUserInfo({
+        user_id: user_id,
+        account: account,
+        nickname: nickname,
+        avatar: avatar}
+      )
       // 打印存储的 token
       console.log('登录成功，存储的 token:', userStore.token);
-
-      console.log(`登录成功，用户名: ${nickname}, 头像: ${avatar}`);
+      console.log(`登录成功111`,userStore.userInfo);
       console.log('登录成功，准备跳转到 /main');
       await router.push('/main')  // 登录成功后跳转到主页面
     } else {
