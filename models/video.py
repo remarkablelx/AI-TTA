@@ -5,7 +5,7 @@ class Video(db.Model):
     __tablename__ = 'video'  # 数据库表名
 
     video_id = db.Column(db.Integer, primary_key=True, autoincrement=True, comment='视频ID')
-    video_path = db.Column(db.String(45), nullable=True, comment='视频存储路径')
+    video_path = db.Column(db.String(100), nullable=True, comment='视频存储路径')
     video_name = db.Column(db.String(45), nullable=True, comment='视频名称')
     video_size = db.Column(db.DECIMAL(5, 2), nullable=True, comment='视频文件大小')
     video_duration = db.Column(db.String(45), nullable=True, comment='视频时长')

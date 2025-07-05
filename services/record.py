@@ -7,8 +7,14 @@ from sqlalchemy import or_
 class RecordService:
     @staticmethod
     def all_record(user_id:int, page_num:int = 1, page_size:int = 10):
-        """获取用户所有记录，并进行分页操作"""
+        """获取指定用户的所有分析记录（分页）
+        :param user_id: 用户ID
+        :param page_num: 当前页码
+        :param page_size: 每页数量
+        :return: 包含记录列表的字典
+        """
         try:
+            # 查询记录并关联视频表获取视频名称
             query = db.session.query(
                 Record,
                 Video.video_name
@@ -40,14 +46,19 @@ class RecordService:
 
     @staticmethod
     def add_record(video_id:int, user_id:int):
-        """创建新记录"""
+        """创建新的分析记录
+        :param video_id: 视频ID
+        :param user_id: 用户ID
+        :return: 操作结果字典
+        """
         try:
+            # 创建新记录对象
             new_record = Record(
                 video_id = video_id,
                 user_id = user_id,
-                state = 0,
+                state = 0, #初始为0，未处理
                 time = datetime.now(),
-                expiration_time = datetime.now()+timedelta(days=30)
+                expiration_time = datetime.now()+timedelta(days=30) # 默认30天后过期
             )
             db.session.add(new_record)
             db.session.commit()
@@ -58,7 +69,10 @@ class RecordService:
 
     @staticmethod
     def get_record(record_id):
-        """根据分析记录ID获取分析记录"""
+        """根据记录ID获取分析记录详情
+        :param record_id: 记录ID
+        :return: 包含记录详情的字典
+        """
         try:
             record = db.session.execute(
                 db.select(Record).filter_by(record_id=record_id)
@@ -82,7 +96,11 @@ class RecordService:
 
     @staticmethod
     def set_record(record_id, data):
-        """更新记录信息"""
+        """更新记录信息
+        :param record_id: 记录ID
+        :param data: 更新数据字典
+        :return: 操作结果字典
+        """
         try:
             # 获取记录
             record = Record.query.get(record_id)
@@ -108,7 +126,10 @@ class RecordService:
 
     @staticmethod
     def delete_record(record_id):
-        """删除记录"""
+        """删除分析记录
+        :param record_id: 记录ID
+        :return: 操作结果字典
+        """
         try:
             # 获取记录
             record = Record.query.get(record_id)
@@ -122,7 +143,15 @@ class RecordService:
 
     @staticmethod
     def search_record(user_id, search='', state=None, sort='time_desc', page_num=1, page_size=10):
-        """搜索、筛选和排序记录"""
+        """多条件筛选分析记录
+        :param user_id: 用户ID
+        :param search: 搜索关键字
+        :param state: 记录状态筛选
+        :param sort: 排序方式
+        :param page_num: 当前页码
+        :param page_size: 每页数量
+        :return: 包含筛选结果的字典
+        """
         try:
             query = db.session.query(
                 Record,

@@ -1,8 +1,6 @@
 from models.user import db, User
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-from io import BytesIO
-from PIL import Image, ImageDraw, ImageFont
 import random
 import time
 import string
@@ -20,51 +18,51 @@ JWT_ALGORITHM = 'HS256'
 class UserService:
     @staticmethod
     def generate_captcha(length=4):
-        """生成验证码文本和图片"""
+        """生成验证码文本
+        :param length: 验证码长度
+        :return: 验证码文本
+        """
         # 生成随机字符:数字+大写字母
         characters = string.digits + string.ascii_uppercase
         captcha_text = ''.join(random.choices(characters, k=length))
-
-
 
         return captcha_text
 
     @staticmethod
     def create_captcha():
-        """创建验证码并存储"""
+        """创建验证码并存储
+        :return: 包含验证码ID和文本的字典
+        """
         captcha_id = f"captcha_{int(time.time() * 1000)}_{random.randint(1000, 9999)}"
         captcha_text = UserService.generate_captcha()
-
         # 存储验证码
         captcha_storage[captcha_id] = {
             'text': captcha_text,
             'expire_at': datetime.now() + timedelta(seconds=CAPTCHA_EXPIRATION)
         }
-
         return  {'code':'0', 'captcha_id': captcha_id, 'captcha_text': captcha_text}
 
     @staticmethod
     def verify_captcha(captcha_id, user_input):
-        """验证验证码"""
+        """验证用户输入的验证码
+        :param captcha_id: 验证码ID
+        :param user_input: 用户输入的验证码
+        :return: 验证是否通过
+        """
         if not captcha_id or not user_input:
             return False
-
         captcha_data = captcha_storage.get(captcha_id)
         if not captcha_data:
             return False
-
         # 检查是否过期
         if datetime.now() > captcha_data['expire_at']:
             # 清理过期验证码
             del captcha_storage[captcha_id]
             return False
-
-        # 验证用户输入（不区分大小写）
+        # 验证用户输入
         is_valid = user_input.upper() == captcha_data['text'].upper()
-
         # 无论是否匹配都删除已使用的验证码
         del captcha_storage[captcha_id]
-
         return is_valid
 
     @staticmethod
@@ -108,7 +106,11 @@ class UserService:
 
     @staticmethod
     def password_login(account: str, password: str) -> dict:
-        """密码登录"""
+        """密码登录
+        :param account: 账号
+        :param password: 密码
+        :return: 登录结果字典
+        """
         user = User.query.filter_by(account=account).first()
 
         if not user:
@@ -130,7 +132,12 @@ class UserService:
 
     @staticmethod
     def captcha_login(account: str, captcha_id: str, captcha_text: str) -> dict:
-        """验证码登录"""
+        """验证码登录
+        :param account: 账号
+        :param captcha_id: 验证码ID
+        :param captcha_text: 验证码文本
+        :return: 登录结果字典
+        """
         # 验证验证码
         if not UserService.verify_captcha(captcha_id, captcha_text):
             return {'code': '-1', 'message': '短信验证码错误或已过期'}
@@ -213,6 +220,11 @@ class UserService:
 
     @staticmethod
     def update_personal_info(token, update_data):
+        """更新用户个人信息
+        :param token: 用户令牌
+        :param update_data: 更新数据字典
+        :return: 操作结果字典
+        """
         try:
             user_info = UserService.get_user_info(token)
             user_id = user_info['user_id']
@@ -230,7 +242,7 @@ class UserService:
             return {
                 'code': '1',
                 'message': '个人信息更新成功',
-                'updated_fields': list(update_data.keys())
+                'updated_fields': { f"{field}": value for field, value in update_data.items() }
             }
 
         except Exception as e:
@@ -244,7 +256,10 @@ class UserService:
 
     @staticmethod
     def generate_jwt(user_id: int) -> str:
-        """生成JWT令牌"""
+        """生成JWT令牌
+        :param user_id:用户编号
+        :return jwt令牌
+        """
         payload = {
             'user_id': user_id,
             'exp': datetime.now() + timedelta(days=30)
@@ -254,7 +269,10 @@ class UserService:
 
     @staticmethod
     def verify_jwt(token: str) -> dict:
-        """验证JWT令牌并返回payload"""
+        """验证JWT令牌并
+        :param token:用户令牌
+        :return payload
+        """
         try:
             payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
             return payload
@@ -266,7 +284,10 @@ class UserService:
 
     @staticmethod
     def get_user_info(token: str) -> dict:
-        """从JWT令牌中获取用户信息"""
+        """验证JWT令牌并
+        :param token:用户令牌
+        :return 用户信息
+        """
         payload = UserService.verify_jwt(token)
         if 'code' in payload and payload.get('code') == -1:
             return payload
