@@ -2,6 +2,9 @@ import torch.nn as nn
 import torch
 
 class ConvBlock(nn.Module):
+    """
+        一个基础的卷积块，包含 卷积层 -> ReLU激活函数 -> 批量归一化层。
+    """
     def __init__(self, in_channels, out_channels, kernel_size=3, pad=1, stride=1, bias=True):
         super().__init__()
         self.block = nn.Sequential(
@@ -14,10 +17,16 @@ class ConvBlock(nn.Module):
         return self.block(x)
 
 class BallTrackerNet(nn.Module):
+    """
+       球追踪的神经网络模型。
+       输入是3个连续帧（9个通道），输出是一个热力图，表示球可能的位置。
+    """
     def __init__(self, out_channels=256):
         super().__init__()
         self.out_channels = out_channels
 
+        # --- 编码器路径 (下采样) ---
+        # 接收9个通道的输入 (3帧 * 3个RGB通道)
         self.conv1 = ConvBlock(in_channels=9, out_channels=64)
         self.conv2 = ConvBlock(in_channels=64, out_channels=64)
         self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -31,6 +40,8 @@ class BallTrackerNet(nn.Module):
         self.conv8 = ConvBlock(in_channels=256, out_channels=512)
         self.conv9 = ConvBlock(in_channels=512, out_channels=512)
         self.conv10 = ConvBlock(in_channels=512, out_channels=512)
+
+        # --- 解码器路径 (上采样) ---
         self.ups1 = nn.Upsample(scale_factor=2)
         self.conv11 = ConvBlock(in_channels=512, out_channels=256)
         self.conv12 = ConvBlock(in_channels=256, out_channels=256)
@@ -41,12 +52,17 @@ class BallTrackerNet(nn.Module):
         self.ups3 = nn.Upsample(scale_factor=2)
         self.conv16 = ConvBlock(in_channels=128, out_channels=64)
         self.conv17 = ConvBlock(in_channels=64, out_channels=64)
+
+        # 最终输出层
         self.conv18 = ConvBlock(in_channels=64, out_channels=self.out_channels)
 
         self.softmax = nn.Softmax(dim=1)
         self._init_weights()
                   
-    def forward(self, x, testing=False): 
+    def forward(self, x, testing=False):
+        """
+            定义模型的前向传播路径。
+        """
         batch_size = x.size(0)
         x = self.conv1(x)
         x = self.conv2(x)    
@@ -91,7 +107,7 @@ class BallTrackerNet(nn.Module):
     
     
 if __name__ == '__main__':
-    device = 'cpu'
+    device = 'gpu'
     model = BallTrackerNet().to(device)
     inp = torch.rand(1, 9, 360, 640)
     out = model(inp)

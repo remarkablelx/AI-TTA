@@ -32,9 +32,18 @@ def process_one_image(args,
                       pose_estimator,
                       visualizer=None,
                       show_interval=0):
-    """Visualize predicted keypoints (and heatmaps) of one image."""
+    """
+    处理单张图像，执行目标检测和姿态估计。
 
-    # predict bbox
+    :param args: 命令行解析后的参数。
+    :param img: 输入的图像 (可以是文件路径或numpy数组)。
+    :param detector: 初始化后的人体检测器。
+    :param pose_estimator: 初始化后的姿态估计器。
+    :param visualizer: 用于绘制结果的可视化器实例。
+    :param show_interval: 显示图像时每帧之间的等待时间 (秒)。
+    :return: 包含预测实例（关键点、边界框等）的数据样本，如果没有检测到实例则返回None。
+    """
+
     det_result = inference_detector(detector, img)
     pred_instance = det_result.pred_instances.cpu().numpy()
     bboxes = np.concatenate(
@@ -184,7 +193,7 @@ def main():
     # Set JSON output path if save_predictions is enabled
     if args.save_predictions:
         # JSON 结果保存路径
-        json_dir = 'json'
+        json_dir = os.path.join('aimodel','json')
         mmengine.mkdir_or_exist(json_dir)
         args.pred_save_path = os.path.join(
             json_dir, f'{input_name_without_ext}_pose_detect.json')
