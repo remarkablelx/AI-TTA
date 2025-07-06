@@ -5,24 +5,34 @@ import cv2
 
 class VideoService:
     @staticmethod
-    def upload_video(video_path:str, video_name:str):
+    def upload_video(file_stream, video_path:str, video_name:str):
         """上传视频文件并保存到数据库
+        :param file_stream: 文件流
         :param video_path: 视频文件存储路径
         :param video_name: 视频名称
         :return: 包含操作结果和视频信息的字典
         """
         try:
+            # 确保目录存在
+            os.makedirs(os.path.dirname(video_path), exist_ok=True)
+
+            # 保存文件到本地
+            file_stream.save(video_path)
+
+            # 获取视频元数据
             video_info = VideoService.get_info(video_path)
-            # 创建新视频
+
+            # 创建新视频记录
             new_video = Video(
                 video_name=video_name,
                 video_path=video_path,
-                video_size=video_info.get('video_size'),
+                video_size=os.path.getsize(video_path),
                 video_format=video_info.get('format'),
                 video_duration=video_info.get('duration'),
                 video_resolution=video_info.get('resolution'),
                 video_frame_rate=video_info.get('frame_rate')
             )
+
             db.session.add(new_video)
             db.session.commit()
 
@@ -150,7 +160,7 @@ class VideoService:
             video.video_path = new_path
 
             # 获取新的视频信息
-            video_info = VideoService.get_video_info(new_path)
+            video_info = VideoService.get_info(new_path)
             if video_info.get('code') != '-1':
                 video.video_size = video_info.get('video_size')
                 video.video_format = video_info.get('format')

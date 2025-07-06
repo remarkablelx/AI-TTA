@@ -37,9 +37,12 @@ class RecordService:
                 'code': '0',
                 'message': '记录获取成功',
                 'records': result,
-                'total_records': pagination.total,
-                'total_pages': pagination.pages,
-                'current_page': page_num
+                'pagination': {
+                    'total': pagination.total,
+                    'pages': pagination.pages,
+                    'current_page': page_num,
+                    'per_page': page_size
+                }
             }
         except Exception as e:
             return {'code': '-1', 'message': f'获取分析记录失败{str(e)}'}
@@ -196,9 +199,12 @@ class RecordService:
                 'code': '0',
                 'message': '记录筛选成功',
                 'records': result,
-                'total': pagination.total,
-                'pages': pagination.pages,
-                'current_page': page_num
+                'pagination': {
+                    'total': pagination.total,
+                    'pages': pagination.pages,
+                    'current_page': page_num,
+                    'per_page': page_size
+                }
             }
         except Exception as e:
             db.session.rollback()

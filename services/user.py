@@ -168,7 +168,6 @@ class UserService:
             return {'code': '-1', 'message': '用户不存在'}
 
         try:
-            account = user.account
             db.session.delete(user)
             db.session.commit()
 

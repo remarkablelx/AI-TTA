@@ -1,0 +1,9 @@
+aimodel文件夹
+包含了ai模型的全套处理代码
+algorithm_logic.py调用balldetect_pos_vel、mmpose、mmaction文件夹下的算法逻辑，形成pipeline
+/video_output存放输出的视频文件
+/video存放原始视频文件
+/mmpose算法文件夹
+/mmaction算法文件夹
+/json存放输出的json文件
+/balldetect_pos_vel算法文件夹

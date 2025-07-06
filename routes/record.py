@@ -13,7 +13,7 @@ def all_record():
     page_num = data.get("page_num")
     page_size = data.get("page_size")
     result = RecordService.all_record(user_id, page_num, page_size)
-    return result
+    return jsonify(result)
 
 @record.route('/add_record', methods=["POST"])
 def add_record():
@@ -23,7 +23,7 @@ def add_record():
     video_id = data.get("video_id")
     user_id = data.get("user_id")
     result = RecordService.add_record(video_id, user_id)
-    return result
+    return jsonify(result)
 
 @record.route('/get_record', methods=["POST"])
 def get_record():
@@ -32,7 +32,7 @@ def get_record():
     data = json.loads(request.data)
     record_id = data.get("record_id")
     result = RecordService.get_record(record_id)
-    return result
+    return jsonify(result)
 
 @record.route('/set_record', methods=["POST"])
 def set_record():
@@ -43,7 +43,7 @@ def set_record():
     # 提取更新字典中的更新数据
     update_data = {k: v for k, v in data.items() if k != 'record_id'}
     result = RecordService.set_record(record_id, update_data)
-    return result
+    return jsonify(result)
 
 @record.route('/delete_record', methods=["POST"])
 def delete_record():
@@ -52,7 +52,7 @@ def delete_record():
     data = json.loads(request.data)
     record_id = data.get("record_id")
     result = RecordService.delete_record(record_id)
-    return result
+    return jsonify(result)
 
 @record.route('/search_record', methods=["POST"])
 def search_record():
@@ -74,4 +74,4 @@ def search_record():
         page_num=page_num,
         page_size=page_size
     )
-    return result
+    return jsonify(result)

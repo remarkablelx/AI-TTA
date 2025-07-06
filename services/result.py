@@ -101,7 +101,11 @@ class ResultService:
         :return: 结果详情字典
         """
         result = Result.query.get(result_id)
-        return result.to_dict()
+        return {
+            'code': 0,
+            'message': '视频分析成功',
+            'result': result.to_dict()
+        }
 
     @staticmethod
     def set_result(result_id, update_data):
@@ -131,6 +135,7 @@ class ResultService:
                 'code': '-1',
                 'message': f'分析结果更新失败: {str(e)}'
             }
+
 
 
 

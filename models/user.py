@@ -23,6 +23,8 @@ class User(db.Model):
     def to_dict(self):
         return {
             'user_id': self.user_id,
+            'account': self.account,
+            'password': self.password,
             'nickname': self.nickname,
             'avatar': self.avatar,
             'register_time': self.register_time,

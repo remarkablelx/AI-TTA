@@ -1,0 +1,8 @@
+mmpose文件夹
+包含了用于人体姿态估计的Python脚本。该脚本使用MMPose库来处理视频流，并通过深度学习模型来识别人体关键点。
+predict.py用于对视频进行人体骨骼点的识别，并保存json文件和视频文件
+utils/coco_person.py配置文件
+utils/config.py配置文件
+utils/default_runtime.py配置文件
+utils/model1.pth识别预训练模型文件
+utils/model2.pth骨骼预训练模型文件

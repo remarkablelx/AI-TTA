@@ -1,6 +1,7 @@
 import json
+import os
 
-from  flask import  Blueprint, request, jsonify
+from  flask import  Blueprint, request, jsonify, send_file, abort
 result = Blueprint('result',__name__)
 from services.result import ResultService
 
@@ -11,7 +12,7 @@ def generate_result():
     data = json.loads(request.data)
     video_id = data.get('video_id')
     res = ResultService.generate_result(video_id)
-    return res
+    return jsonify(res)
 
 @result.route('/get_result',methods=["POST"])
 def get_result():
@@ -20,7 +21,7 @@ def get_result():
     data = json.loads(request.data)
     result_id = data.get('result_id')
     res = ResultService.get_result(result_id)
-    return res
+    return jsonify(res)
 
 @result.route('/set_result',methods=["POST"])
 def set_result():
@@ -45,4 +46,31 @@ def set_result():
             update_data[field] = data[field]
 
     res = ResultService.set_result(result_id, update_data)
-    return res
+    return jsonify(res)
+
+
+@result.route('/get_video',methods=["POST"])
+def get_video():
+    """根据视频路径上传视频"""
+    data = json.loads(request.data)
+    video_path = data.get('video_path')
+
+    if not video_path or not os.path.exists(video_path):
+        return {'code':'-1', 'message': '视频路径不存在'}
+
+    ext = os.path.splitext(video_path)[1].lower()
+    mime_types = {
+        '.mp4': 'video/mp4',
+        '.mov': 'video/quicktime',
+        '.avi': 'video/x-msvideo',
+        '.mkv': 'video/x-matroska',
+        '.webm': 'video/webm'
+    }
+    mime_type = mime_types.get(ext, 'application/octet-stream')
+
+    return send_file(
+        video_path,
+        mimetype=mime_type,
+        conditional=True,
+        etag=True
+    )

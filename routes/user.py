@@ -8,7 +8,7 @@ from services.user import UserService
 def captcha():
     """生成验证码"""
     result = UserService.create_captcha()
-    return result
+    return jsonify(result)
 
 @user.route('/register', methods=["POST"])
 def register():
@@ -20,7 +20,7 @@ def register():
     captcha_id = data.get('captcha_id')
     captcha_text = data.get('captcha_text')
     result = UserService.register(account, password, captcha_id, captcha_text)
-    return result
+    return jsonify(result)
 
 @user.route('/password_login', methods=["POST"])
 def password_login():
@@ -30,7 +30,7 @@ def password_login():
     account = data.get('account')
     password = data.get('password')
     result = UserService.password_login(account, password)
-    return result
+    return jsonify(result)
 
 @user.route('/captcha_login', methods=["POST"])
 def captcha_login():
@@ -41,7 +41,7 @@ def captcha_login():
     captcha_id = data.get('captcha_id')
     captcha_text = data.get('captcha_text')
     result = UserService.captcha_login(account, captcha_id, captcha_text)
-    return result
+    return jsonify(result)
 
 
 @user.route('/cancel_account', methods=["POST"])
@@ -53,7 +53,7 @@ def cancel_account():
     captcha_id = data.get('captcha_id')
     captcha_text = data.get('captcha_text')
     result = UserService.cancel_account(user_id, captcha_id, captcha_text)
-    return result
+    return jsonify(result)
 
 @user.route('/set_password', methods=["POST"])
 def set_password():
@@ -65,7 +65,7 @@ def set_password():
     captcha_id = data.get('captcha_id')
     captcha_text = data.get('captcha_text')
     result = UserService.set_password(user_id, new_password, captcha_id, captcha_text)
-    return result
+    return jsonify(result)
 
 @user.route('/set_personal_info', methods=["POST"])
 def set_personal_info():
@@ -82,7 +82,7 @@ def set_personal_info():
             update_data[field]=data[field]
 
     result = UserService.update_personal_info(user_id, update_data)
-    return result
+    return jsonify(result)
 
 @user.route('/get_personal_info', methods=["POST"])
 def get_personal_info():
@@ -91,7 +91,7 @@ def get_personal_info():
     data = json.loads(request.data)
     user_id = data.get('user_id')
     result = UserService.get_user_info(user_id)
-    return result
+    return jsonify(result)
 
 
 

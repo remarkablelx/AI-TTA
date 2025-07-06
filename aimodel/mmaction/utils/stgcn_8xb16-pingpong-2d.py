@@ -1,13 +1,13 @@
 # mmaction2/configs/skeleton/stgcn/stgcn_improved_config_fixed.py
 
-# 明确导入包含 RandomRotate 等数据增强方法的模块
 custom_imports = dict(imports=['mmaction.datasets.transforms'], allow_failed_imports=False)
 
 _base_ = ['default_runtime.py']
-# 依然使用预训练模型作为起点
+
+# 使用预训练模型作为起点
 load_from = r'stgcn_8xb16-joint-u100-80e_ntu60-xsub-keypoint-2d_20221129-484a394a.pth'
 
-# 模型配置保持不变
+# 模型配置
 model = dict(
     type='RecognizerGCN',
     backbone=dict(
@@ -29,21 +29,18 @@ ann_file_train = data_root + 'pingpong_train.pkl'
 ann_file_val = data_root + 'pingpong_val.pkl'
 ann_file_test = data_root + 'pingpong_val.pkl' # 测试时也使用验证集
 
-# 训练数据管道 (重新启用数据增强)
+# 训练数据管道
 clip_len = 64
 train_pipeline = [
     dict(type='PoseDecode'),
     dict(type='UniformSampleFrames', clip_len=clip_len),
     dict(type='Flip', flip_ratio=0.5, left_kp=[1, 3, 5, 7, 9, 11, 13, 15], right_kp=[2, 4, 6, 8, 10, 12, 14, 16]),
-    # 重新启用数据增强以提升模型泛化能力
     dict(type='RandomResizedCrop', area_range=(0.56, 1.0)),
-    # dict(type='RandomRotate', p=0.5, angle_range=(-30, 30)),
     dict(type='FormatGCNInput'),
     dict(type='PackActionInputs')
 ]
 
-# --- FIX: 修正部分 ---
-# 验证管道：在训练期间使用，为了速度，只采样1个片段
+# 验证管道
 val_pipeline = [
     dict(type='PoseDecode'),
     dict(type='UniformSampleFrames', clip_len=clip_len, num_clips=1, test_mode=True),
@@ -51,19 +48,18 @@ val_pipeline = [
     dict(type='PackActionInputs')
 ]
 
-# 测试管道：在训练结束后用 tools/test.py 进行最终评估时使用，采样多个片段更准确
+# 测试管道
 test_pipeline = [
     dict(type='PoseDecode'),
     dict(type='UniformSampleFrames', clip_len=clip_len, num_clips=1, test_mode=True),
     dict(type='FormatGCNInput'),
     dict(type='PackActionInputs')
 ]
-# --- 修正结束 ---
 
 # 数据加载器配置
 train_dataloader = dict(
     batch_size=8,
-    num_workers=4, # 保持你测试过的最优值
+    num_workers=4,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
@@ -72,8 +68,7 @@ train_dataloader = dict(
         split='pingpong_train',
         pipeline=train_pipeline))
 
-# --- FIX: 修正部分 ---
-# 验证和测试的数据加载器分开定义
+# 验证和测试的数据加载器
 val_dataloader = dict(
     batch_size=8,
     num_workers=4,
@@ -83,21 +78,20 @@ val_dataloader = dict(
         type=dataset_type,
         ann_file=ann_file_val,
         split='pingpong_val',
-        pipeline=val_pipeline, # 使用验证管道
+        pipeline=val_pipeline,
         test_mode=True))
 
 test_dataloader = dict(
-    batch_size=1, # 测试时通常 batch_size 设为 1
+    batch_size=1,
     num_workers=4,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type=dataset_type,
         ann_file=ann_file_test,
-        split='pingpong_val', # 假设测试也用 val 集
-        pipeline=test_pipeline, # 使用测试管道
+        split='pingpong_val',
+        pipeline=test_pipeline,
         test_mode=True))
-# --- 修正结束 ---
 
 # 评估器配置
 val_evaluator = dict(type='AccMetric')

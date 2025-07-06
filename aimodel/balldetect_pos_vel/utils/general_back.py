@@ -6,6 +6,17 @@ import cv2
 from scipy.spatial import distance
 
 def train(model, train_loader, optimizer, device, epoch, max_iters=200):
+    """
+        模型训练函数，用于执行一个epoch的训练。
+
+        :param model: 要训练的模型
+        :param train_loader: 训练数据的DataLoader
+        :param optimizer: 优化器
+        :param device: 'cpu' 或 'cuda'
+        :param epoch: 当前的epoch数
+        :param max_iters: 每个epoch的最大迭代次数
+        :return: 当前epoch的平均损失
+    """
     start_time = time.time()
     losses = []
     criterion = nn.CrossEntropyLoss()
@@ -32,6 +43,16 @@ def train(model, train_loader, optimizer, device, epoch, max_iters=200):
     return np.mean(losses)
 
 def validate(model, val_loader, device, epoch, min_dist=5):
+    """
+        模型验证函数，用于评估模型在验证集上的性能。
+
+        :param model: 要验证的模型
+        :param val_loader: 验证数据的DataLoader
+        :param device: 'cpu' 或 'cuda'
+        :param epoch: 当前的epoch数
+        :param min_dist: 判断为真阳性(TP)的最大像素距离
+        :return: 平均损失, 准确率, 召回率, F1分数
+    """
     height = 360
     width = 640
     orig_height = 1080
@@ -97,6 +118,14 @@ def validate(model, val_loader, device, epoch, min_dist=5):
 
 
 def postprocess(feature_map, scale_x, scale_y):
+    """
+    后处理函数，将模型的输出热力图转换为球的坐标。
+
+    :param feature_map: 模型输出的单通道特征图
+    :param scale_x: 宽度方向的缩放因子
+    :param scale_y: 高度方向的缩放因子
+    :return: x, y: 球在原始图像尺寸下的坐标，如果未检测到则为None
+    """
     feature_map *= 255
     feature_map = feature_map.reshape((360, 640))
     feature_map = feature_map.astype(np.uint8)

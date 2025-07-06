@@ -12,7 +12,7 @@ def login():
     account = data.get('account')
     password = data.get('password')
     result = AdminService.login(account, password)
-    return result
+    return jsonify(result)
 
 @admin.route('/all_user', methods=["POST"])
 def all_user():
@@ -22,7 +22,7 @@ def all_user():
     page_num = data.get('page_num', 1)
     page_size = data.get('page_size', 10)
     result = AdminService.all_user(page_num, page_size)
-    return result
+    return jsonify(result)
 
 @admin.route('/get_user_info', methods=["POST"])
 def get_user_info():
@@ -31,7 +31,7 @@ def get_user_info():
     data = json.loads(request.data)
     user_id = data.get('user_id')
     result = AdminService.get_user_info(user_id)
-    return result
+    return jsonify(result)
 
 @admin.route('/delete_user', methods=["POST"])
 def delete_user():
@@ -40,7 +40,7 @@ def delete_user():
     data = json.loads(request.data)
     user_id = data.get('user_id')
     result = AdminService.delete_user(user_id)
-    return result
+    return jsonify(result)
 
 
 @admin.route('/filter_user', methods=["POST"])
@@ -55,7 +55,7 @@ def filter_user():
     page_num = data.get('page_num', 1)
     page_size = data.get('page_size', 10)
     result = AdminService.filter_users(search, sort_field, sort_order, sex, page_num, page_size)
-    return result
+    return jsonify(result)
 
 
 @admin.route('/all_record', methods=["POST"])
@@ -66,7 +66,7 @@ def all_record():
     page_num = data.get('page_num')
     page_size = data.get('page_size')
     result = AdminService.all_record(page_num, page_size)
-    return result
+    return jsonify(result)
 
 @admin.route('/delete_record', methods=["POST"])
 def delete_record():
@@ -75,7 +75,7 @@ def delete_record():
     data = json.loads(request.data)
     record_id = data.get('record_id')
     result = AdminService.delete_record(record_id)
-    return result
+    return jsonify(result)
 
 @admin.route('/filter_record', methods=["POST"])
 def filter_record():
@@ -90,4 +90,4 @@ def filter_record():
 
     result = AdminService.filter_record(search, order, state, page_num, page_size)
 
-    return result
+    return jsonify(result)

@@ -27,7 +27,7 @@ class AdminService:
         return {
             'code': '0',
             'message': '登录成功',
-            'admin_info': admin.to_dict()
+            'admin_id': admin.admin_id
         }
 
     @staticmethod
@@ -58,9 +58,10 @@ class AdminService:
             # 构建结果列表，为每个用户添加记录数量
             result = []
             for user in users:
-                user_dict = user.to_dict()
+                user_dict = {'user_id': user.user_id, 'account': user.account, 'nickname': user.nickname,
+                             'sex': user.sex, 'register_time': user.register_time,
+                             'record_count': count_dict.get(user.user_id, 0)}
                 # 添加记录数量，如果没有记录则为0
-                user_dict['record_count'] = count_dict.get(user.user_id, 0)
                 result.append(user_dict)
 
             return {
@@ -85,7 +86,7 @@ class AdminService:
         """
         try:
             user = User.query.get(user_id)
-            return user.to_dict()
+            return {'code': -1, 'message': '用户不存在','user_info':user.to_dict()}
 
         except Exception as e:
             return {'code': '-1', 'message': f'用户信息获取失败{str(e)}'}
