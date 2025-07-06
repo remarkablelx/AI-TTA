@@ -10,12 +10,13 @@ const userStore = useUserStore();
 const records = ref([]); // 存储获取的历史记录
 const user_id = userStore.userInfo.user_id;
 const page_num = ref(1); // 页码
-const page_size = ref(20); // 每页条数
+const page_size = ref(6); // 每页条数
 
 // 获取历史记录
-const fetchRecords = async () => {
+const fetchRecords = async (page_num:number,page_size:number) => {
   try {
-    const data = await get_allRecord(user_id, page_num.value, page_size.value);
+    const data = await get_allRecord(user_id, page_num, page_size);
+    console.log('获取到的data是'+data)
     records.value = data.records; // 假设返回的数据中包含 records
     console.log('历史记录请求成功:', records.value);
   } catch (error) {
@@ -30,7 +31,6 @@ const addRecord = async (video_id: number) => {
     const response = await add_record(video_id, user_id); // user_id 从 Pinia store 获取
     if (response.success) {
       console.log('记录添加成功');
-      fetchRecords(); // 重新获取记录，刷新视图
     } else {
       console.error('记录添加失败');
     }
@@ -39,35 +39,24 @@ const addRecord = async (video_id: number) => {
   }
 };
 
-// 修改分析记录
-const updateRecord = async (record_id: number, state: number, video_name: string, expiration_time: string) => {
-  try {
-    const response = await set_record(record_id, state, video_name, expiration_time);
-    if (response.success) {
-      console.log('记录更新成功');
-      fetchRecords(); // 更新记录后重新获取并刷新
-    } else {
-      console.error('记录更新失败');
-    }
-  } catch (error) {
-    console.error('修改分析记录失败:', error);
-  }
-};
-
 // 删除分析记录
 const deleteRecord = async (record_id: number) => {
   try {
-    const response = await delete_record(record_id);
+    console.log('要删除的记录ID:', record_id); // 打印要删除的ID
+    const response = await delete_record(record_id); // 向后端发送删除请求
+    console.log(records)
     if (response.success) {
       console.log('记录删除成功');
-      fetchRecords(); // 删除记录后重新获取并刷新
+      // 删除成功后从前端列表中移除记录
+      records.value = records.value.filter(record => record.id !== record_id);
     } else {
       console.error('记录删除失败');
     }
-  } catch (error) {
-    console.error('删除分析记录失败:', error);
+  } catch (err) {
+    console.error('删除分析记录失败:', err);
   }
 };
+
 
 // 筛选分析记录
 const searchRecords = async (search: string, state: string, sort: number) => {
@@ -79,8 +68,6 @@ const searchRecords = async (search: string, state: string, sort: number) => {
     console.error('筛选分析记录失败:', error);
   }
 };
-
-
 
 // 映射状态值到文本
 const getStatusText = (status: number) => {
@@ -113,8 +100,10 @@ const getStatusClass = (status: number) => {
 
 // 组件加载时调用 fetchRecords
 onMounted(() => {
-  fetchRecords();
+  fetchRecords(page_num.value,page_size.value)
 });
+
+
 </script>
 
 <template>
@@ -152,16 +141,16 @@ onMounted(() => {
         <span>{{ record.expiration_time }}</span>
       </div>
       <div>
-        <button class="check-btn" @click="updateRecord(record.id, 1, record.video_name, record.expiration_time)">更新</button>
+        <button class="check-btn" @click="updateRecord(record.id, 1, record.video_name, record.expiration_time)">修改</button>
         <button class="delete-btn" @click="deleteRecord(record.id)">删除</button>
       </div>
     </div>
 
     <!-- 分页 -->
     <div class="pagination">
-      <button @click="page_num > 1 && (page_num -= 1); fetchRecords()">上一页</button>
+      <button @click="page_num > 1 && (page_num -= 1); fetchRecords(page_num, page_size)">上一页</button>
       <span>页码: {{ page_num }}</span>
-      <button @click="page_num += 1; fetchRecords()">下一页</button>
+      <button @click="page_num += 1; fetchRecords(page_num, page_size)">下一页</button>
     </div>
   </div>
 </template>

@@ -1,8 +1,10 @@
 <!-- VideoComparator.vue -->
 <template>
   <div class="video-comparator">
+    <!-- 全局控制按钮 -->
     <div class="global-controls">
       <h2>视频分析（原视频 / 处理视频）</h2>
+      <!-- 同步播放按钮 -->
       <button class="sync-button" @click="toggleSync">
         {{ isSyncing ? '断开同步' : '同步播放' }}
       </button>
@@ -16,6 +18,7 @@
       >
         <div class="video-wrapper">
           <div class="video-frame">
+            <!-- 原始视频播放组件 -->
             <video
               ref="originalVideo"
               :src="originalSrc"
@@ -24,6 +27,7 @@
               @timeupdate="e => updateProgress(e, 'original')"
             ></video>
           </div>
+          <!-- 原视频控制 -->
           <video-controls
             type="original"
             :progress="progress.original"
@@ -45,6 +49,7 @@
       >
         <div class="video-wrapper">
           <div class="video-frame">
+            <!-- 处理后视频播放组件 -->
             <video
               ref="processedVideo"
               :src="processedSrc"
@@ -53,6 +58,7 @@
               @timeupdate="e => updateProgress(e, 'processed')"
             ></video>
           </div>
+          <!-- 处理后视频控制 -->
           <video-controls
             type="processed"
             :progress="progress.processed"
@@ -75,59 +81,74 @@ import VideoControls from "@/components/Main/VideoControls.vue";
 export default {
   components: { VideoControls },
   props: {
+    // 原始视频源和处理后视频源
     originalSrc: String,
     processedSrc: String
   },
   data() {
     return {
+      // 同步播放状态
       isSyncing: false,
+      // 视频播放进度
       progress: { original: 0, processed: 0 },
+      // 当前播放时间
       currentTime: { original: 0, processed: 0 },
+      // 视频时长
       duration: { original: 0, processed: 0 },
+      // 视频是否全屏
       isZoomed: { original: false, processed: false }
     };
   },
   mounted() {
-    // 监听全屏变化事件
+    // 监听全屏事件
     document.addEventListener('fullscreenchange', this.handleFullscreenChange);
   },
   beforeDestroy() {
+    // 组件销毁时移除事件监听
     document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
   },
   methods: {
+    // 切换播放/暂停
     togglePlay(type) {
       const video = this.$refs[`${type}Video`];
       video.paused ? video.play() : video.pause();
     },
+    // 更新视频播放进度
     updateProgress(event, type) {
       const video = event.target;
       this.currentTime[type] = video.currentTime;
       this.duration[type] = video.duration;
       this.progress[type] = (video.currentTime / video.duration) * 100 || 0;
 
+      // 如果开启同步播放，保持两个视频同步
       if (this.isSyncing && type === "original") {
         this.$refs.processedVideo.currentTime = video.currentTime;
       }
     },
+    // 处理视频进度条拖动
     handleSeek(value, type) {
       const video = this.$refs[`${type}Video`];
       video.currentTime = (value * video.duration) / 100;
     },
+    // 切换同步播放状态
     toggleSync() {
       this.isSyncing = !this.isSyncing;
       if (this.isSyncing) {
         this.syncVideos();
       }
     },
+    // 同步播放两个视频
     async syncVideos() {
       await Promise.all([
         this.$refs.originalVideo.play(),
         this.$refs.processedVideo.play()
       ]);
     },
+    // 处理播放事件
     handlePlay() {
       if (this.isSyncing) this.syncVideos();
     },
+    // 处理暂停事件
     handlePause() {
       if (this.isSyncing) {
         this.$refs.originalVideo.pause();
@@ -146,6 +167,7 @@ export default {
         this.isZoomed = { ...this.isZoomed, [type]: false };
       }
     },
+    // 进入全屏模式
     async enterFullscreen(element) {
       if (element.requestFullscreen) {
         return element.requestFullscreen();
@@ -156,6 +178,7 @@ export default {
       }
       console.warn('Fullscreen API is not supported');
     },
+    // 退出全屏模式
     async exitFullscreen() {
       if (document.exitFullscreen) {
         await document.exitFullscreen();
@@ -165,6 +188,7 @@ export default {
         await document.msExitFullscreen();
       }
     },
+    // 监听全屏变化事件
     handleFullscreenChange() {
       if (!document.fullscreenElement) {
         this.isZoomed = { original: false, processed: false };

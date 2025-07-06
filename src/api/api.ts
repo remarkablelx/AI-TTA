@@ -265,19 +265,3 @@ try {
     throw new Error('筛选分析记录请求失败');
   }
 };
-
-
-// 上传视频接口
-export const upload_video = async (video_path:string,video_name:string) => {
-try {
-    const response = await api.post('/video/upload_video', {
-      video_path,
-      video_name,
-
-    });
-    return response.data;
-  } catch (error) {
-    console.log('上传视频请求失败'+error)
-    throw new Error('上传视频请求失败');
-  }
-};
