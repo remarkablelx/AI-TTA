@@ -3,27 +3,27 @@
     <!-- 显示 UserInfo1 组件 -->
     <UserInfo1
       class="user-info-1"
-      :avatarUrl="userInfo.avatarUrl"
-      :userName="userInfo.userName"
-      :gender="userInfo.gender"
-      :phonenumber="userInfo.phonenumber"
-      :email="userInfo.email"
-      :personalNote="userInfo.personalNote"
+      :avatarUrl="UserInfo.avatarUrl"
+      :userName="UserInfo.userName"
+      :gender="UserInfo.gender"
+      :phonenumber="UserInfo.phonenumber"
+      :email="UserInfo.email"
+      :personalNote="UserInfo.personalNote"
     />
 
     <!-- 显示 UserInfo2 组件 -->
     <UserInfo2
       class="user-info-2"
-      :avatarUrl="userInfo.avatarUrl"
-      :userName="userInfo.userName"
-      :gender="userInfo.gender"
-      :height="userInfo.height"
-      :weight="userInfo.weight"
-      :email="userInfo.email"
-      :location="userInfo.location"
-      :phonenumber="userInfo.phonenumber"
-      :personalNote="userInfo.personalNote"
-      :registrationDate="userInfo.registrationDate"
+      :avatarUrl="UserInfo.avatarUrl"
+      :userName="UserInfo.userName"
+      :gender="UserInfo.gender"
+      :height="UserInfo.height"
+      :weight="UserInfo.weight"
+      :email="UserInfo.email"
+      :location="UserInfo.location"
+      :phonenumber="UserInfo.phonenumber"
+      :personalNote="UserInfo.personalNote"
+      :registrationDate="UserInfo.registrationDate"
     />
       <h1>
         <UserInfo3  form=""/>
@@ -31,69 +31,60 @@
   </div>
 </template>
 
-<script>
-// 导入 UserInfo1 和 UserInfo2 组件
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { useUserStore } from "@/stores/userStore.js";
+import { get_personalInfo } from "@/api/api.js";
 import UserInfo1 from './UserInfo1.vue';
 import UserInfo2 from './UserInfo2.vue';
 import UserInfo3 from "./UserInfo3.vue";
-import { useUserStore } from "@/stores/userStore.js";
-import { get_personalInfo } from "@/api/api.js";
 
-export default {
-  name: 'UserInfo',
-  components: {
-    UserInfo1,
-    UserInfo2,
-    UserInfo3,
-  },
-  data() {
-    return {
-      userInfo: {
-        avatarUrl: '',
-        userName: '',
-        gender: '',
-        phonenumber: '',
-        email: '',
-        personalNote: '',
-        height: '',
-        weight: '',
-        registrationDate: '',
-        location: ''
-      }
-    };
-  },
-  async created() {
-    // 获取 token
-    const userStore = useUserStore();
-    const token = userStore.token;
+// 获取用户信息
+const userStore = useUserStore();
+const token = userStore.token;
+const user_id = userStore.userInfo.user_id
+const account = userStore.userInfo.account
 
-    // 调用 API 获取个人信息
-    try {
-      const personalInfo = await get_personalInfo(token); // 获取个人信息
-      // 更新组件的状态
-      this.updateUserInfo(personalInfo);
-    } catch (error) {
-      console.error('获取个人信息失败:', error);
-    }
-  },
-  methods: {
-    // 更新用户信息的函数
-    updateUserInfo(updatedData) {
-      // 根据返回的数据字段更新组件的状态
-      this.userInfo.avatarUrl = updatedData.avatar || '';
-      this.userInfo.userName = updatedData.nickname || '';
-      this.userInfo.gender = updatedData.sex === 1 ? '男' : '女';
-      this.userInfo.phonenumber = updatedData.account || '';
-      this.userInfo.email = updatedData.email || '';
-      this.userInfo.personalNote = updatedData.note || '';
-      this.userInfo.height = updatedData.height || '';
-      this.userInfo.weight = updatedData.weight || '';
-      this.userInfo.registrationDate = updatedData.register_time || '';
-      this.userInfo.location = updatedData.location || '';
-    }
-  }
+// 创建响应式数据
+const UserInfo = ref({
+  avatarUrl: '',
+  userName: '',
+  gender: '',
+  phonenumber: account,
+  email: '',
+  personalNote: '',
+  height: '',
+  weight: '',
+  registrationDate: '',
+  location: ''
+});
+
+
+// 更新用户信息
+const updateUserInfo = (updatedData: any) => {
+  UserInfo.value.avatarUrl = updatedData.avatar || '';
+  UserInfo.value.userName = updatedData.nickname || '';
+  UserInfo.value.gender = updatedData.sex === 1 ? '男' : '女';
+  UserInfo.value.email = updatedData.email || '';
+  UserInfo.value.personalNote = updatedData.note || '';
+  UserInfo.value.height = updatedData.height || '';
+  UserInfo.value.weight = updatedData.weight || '';
+  UserInfo.value.registrationDate = updatedData.register_time || '';
+  UserInfo.value.location = updatedData.location || '';
 };
+
+// 在组件挂载后获取个人信息
+onMounted(async () => {
+  try {
+    const personalInfo = await get_personalInfo(user_id); // 获取个人信息
+    console.log(personalInfo.user_info)
+    updateUserInfo(personalInfo.user_info);  // 更新用户信息
+  } catch (error) {
+    console.error('获取个人信息失败:', error);
+  }
+});
 </script>
+
 
 <style scoped>
 .user-info-container {

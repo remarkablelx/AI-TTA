@@ -87,11 +87,11 @@ try {
 };
 
 // 获取个人信息API
-export const get_personalInfo = async (token: string) => {
+export const get_personalInfo = async (user_id: number) => {
   try {
     // 发起 POST 请求
     const response = await api.post('/user/get_personal_info', {
-      token,  // 传递 token 参数
+      user_id,  // 传递 token 参数
     });
     // 处理返回的数据
     if (response.data) {
@@ -108,16 +108,19 @@ export const get_personalInfo = async (token: string) => {
 
 
 // 修改个人信息的 API
-export const update_personalInfo = async (token:string, nickname:string,avatar:string,sex:number,email:string,note:string) => {
+export const update_personalInfo = async (user_id: number, nickname:string,avatar:string,sex:number,email:string,note:string,height:string,weight:string,location:string) => {
   try {
     // 发起 POST 请求
-    const response = await api.post('/user/update_personal_info', {
-      token,        // 传递 token 参数
+    const response = await api.post('/user/set_personal_info', {
+      user_id,        // 传递 token 参数
       nickname,
       avatar,
       sex,
       email,
-      note
+      note,
+      height,
+      weight,
+      location
     });
     // 处理返回的数据
     if (response.data) {
@@ -133,11 +136,11 @@ export const update_personalInfo = async (token:string, nickname:string,avatar:s
 };
 
 // 注销账户的 API
-export const cancel_account = async (token:string, captcha_id: string, smsCode: string) => {
+export const cancel_account = async (user_id: number, captcha_id: string, smsCode: string) => {
   try {
     // 发起 POST 请求
     const response = await api.post('/user/cancel_account', {
-      token,
+      user_id,
       captcha_id,
       captcha_text: smsCode,  // 提交用户输入的验证码
     });
@@ -155,11 +158,11 @@ export const cancel_account = async (token:string, captcha_id: string, smsCode: 
 };
 
 // 修改密码的 API
-export const set_password = async (token:string, new_password:string, captcha_id: string, smsCode: string) => {
+export const set_password = async (user_id: number, new_password:string, captcha_id: string, smsCode: string) => {
   try {
     // 发起 POST 请求
     const response = await api.post('/user/set_password', {
-      token,
+      user_id,
       new_password,
       captcha_id,
       captcha_text: smsCode,  // 提交用户输入的验证码

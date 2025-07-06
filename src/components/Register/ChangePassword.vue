@@ -15,7 +15,7 @@ const captchaText = ref('');        // 验证码文本
 
 // 获取用户 store 和 token
 const userStore = useUserStore();
-const token = userStore.token; // 获取 token
+const user_id = userStore.userInfo.user_id
 
 // 获取验证码
 const getSmsCode = async () => {
@@ -49,16 +49,16 @@ const handleReset = async () => {
     return
   }
 
-  // 调用后端接口修改密码
   try {
-    const response = await set_password({
-      token: token,
-      captcha_id: captchaId.value,
-      sms_code: smsCode.value,
-    })
+    const response = await set_password(
+      user_id,             // 普通值
+      newPassword.value,   // 解开 ref
+      captchaId.value,     // 解开 ref
+      smsCode.value        // 解开 ref
+    )
 
     if (response.code === '0') {
-      alert('密码修改成功')
+      alert('密码修改成功，新密码是：' + newPassword.value)
       await router.push('/login')
     } else {
       alert('密码修改失败: ' + response.message)
@@ -104,7 +104,6 @@ const handleReset = async () => {
           <button
             type="button"
             class="sms-btn"
-            :disabled="countdown > 0"
             @click="getSmsCode"
           >
             {{ countdown ? `${countdown}s` : '获取验证码' }}

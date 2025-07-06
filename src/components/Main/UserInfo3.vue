@@ -93,16 +93,19 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getCaptcha, cancel_account, update_personalInfo } from "@/api/api.ts";
+import {getCaptcha, cancel_account, update_personalInfo, get_personalInfo} from "@/api/api.ts";
 import { useUserStore } from '@/stores/userStore.js';  // 导入状态管理
 import { useRouter } from 'vue-router';  // 引入 Vue Router
 import Logo from "@/components/Home/Logo.vue";
+
 // 路由实例，用于跳转页面
 const router = useRouter();
 
 // 获取用户 store 和 token
 const userStore = useUserStore();
-const token = userStore.token;
+const userInfo = userStore.userInfo
+const user_id = userInfo.user_id;
+
 
 // 状态管理
 const showLogoutModal = ref(false); // 控制注销弹窗显示
@@ -115,7 +118,7 @@ const captchaText = ref('');        // 用于存储验证码文本
 interface Form {
   avatarUrl: string;
   userName: string;
-  gender: string;
+  gender: number;
   location: string;
   height: string;
   weight: string;
@@ -129,7 +132,7 @@ interface Form {
 const form = ref<Form>({
   avatarUrl: '',
   userName: '',
-  gender: '',
+  gender: 0,
   location: '',
   height: '',
   weight: '',
@@ -147,11 +150,11 @@ const handleSubmit = async () => {
     return;
   }
 
-  // 验证性别
-  if (form.value.gender !== '男' && form.value.gender !== '女') {
-    alert("性别必须是男或女");
-    return;
-  }
+  // // 验证性别
+  // if (form.value.gender !== 0 && form.value.gender !== 1) {  // 数字验证
+  //   alert("性别必须是0（男）或1（女）");
+  //   return;
+  // }
 
   // 验证邮箱
   if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.com$/.test(form.value.email)) {
@@ -160,11 +163,24 @@ const handleSubmit = async () => {
   }
 
   try {
-    const response = await update_personalInfo(form.value); // 假设调用修改个人信息的API
+    // 调用修改个人信息的 API
+    const response = await update_personalInfo(
+        user_id,
+        form.value.userName,
+        form.value.avatarUrl,
+        form.value.gender,
+        form.value.email,
+        form.value.personalNote,
+        form.value.height,
+        form.value.weight,
+        form.value.location
+    );
+    console.log("正在更新个人信息, user_id:", user_id);
 
-    if (response.code === '0') {
+    if (response.code === '1') {
       alert('信息更新成功');
       closeModal(); // 关闭编辑弹窗
+
     } else {
       alert('信息更新失败: ' + response.message);
     }
@@ -184,17 +200,18 @@ const handleEdit = () => {
   // 填充表单数据
   form.value.avatarUrl = userStore.userInfo?.avatarUrl || '';
   form.value.userName = userStore.userInfo?.userName || '';
-  form.value.gender = userStore.userInfo?.gender || '';
+  form.value.gender = userStore.userInfo?.gender || -1 ;
   form.value.location = userStore.userInfo?.location || '';
   form.value.height = userStore.userInfo?.height || '';
   form.value.weight = userStore.userInfo?.weight || '';
   form.value.email = userStore.userInfo?.email || '';
-  form.value.phonenumber = userStore.userInfo?.phonenumber || '';
+  form.value.phonenumber = userStore.userInfo?.account || '';
   form.value.personalNote = userStore.userInfo?.personalNote || '';
   form.value.registrationDate = userStore.userInfo?.registrationDate || '';
 
   showEditModal.value = true; // 打开编辑弹窗
 };
+
 
 // 头像上传
 const triggerFileInput = () => {
@@ -205,8 +222,20 @@ const triggerFileInput = () => {
 // 退出登录处理
 const handleCancel = () => {
   userStore.token = ''; // 清除 token
-  userStore.userInfo = null; // 清除用户信息
-
+  userStore.userInfo = {
+    user_id: -1,               // 用户 ID
+    account: '',              // 用户账号
+    nickname: '',             // 用户昵称
+    avatarUrl: '',            // 用户头像 URL
+    userName: '',             // 用户姓名
+    gender: -1,                // 用户性别，0为女，1为男
+    height: '',               // 用户身高
+    weight: '',               // 用户体重
+    email: '',                // 用户邮箱
+    location: '',             // 用户位置
+    personalNote: '',         // 用户个人说明
+    registrationDate: '',     // 用户注册日期
+  };
   // 清除本地存储中的用户信息
   localStorage.removeItem('token');
   localStorage.removeItem('userInfo');
@@ -237,10 +266,11 @@ const getSmsCode = async () => {
 // 注销账号
 const confirmLogout = async () => {
   try {
-    const response = await cancel_account(token, captchaId.value, captchaInput.value); // 假设注销接口是 cancel_account
+    const response = await cancel_account(user_id, captchaId.value, captchaInput.value); // 假设注销接口是 cancel_account
     if (response.code === '0') {
       alert('注销成功');
       closeLogoutModal(); // 关闭模态框
+      await router.push('/login');
     } else {
       alert('注销失败');
     }
