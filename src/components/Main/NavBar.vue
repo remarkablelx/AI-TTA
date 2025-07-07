@@ -4,6 +4,8 @@ import logo from '@/components/Home/Logo.vue'
 import { useUserStore } from '@/stores/auth2.js' // 导入身份验证
 import { useHistoryStore } from '@/stores/history' // 导入历史记录
 import axios from 'axios'
+import { uploadVideo } from "@/api/api.js";
+import { useVideoStore } from '@/stores/videoStore.js'; // 引入视频 store
 
 export default {
   components: { logo },
@@ -26,7 +28,7 @@ export default {
       tabs: [
         { id: 'analysis-view', label: '分析界面'},
         { id: 'analysis-history', label: '分析历史'},
-        { id: 'user-information',label:'个人信息'}
+        { id: 'user-information', label: '个人信息'}
       ]
     }
   },
@@ -34,10 +36,14 @@ export default {
     goHome() {
       this.$router.push('/')  // 跳转到主页
     },
+
+    // 触发文件输入框点击事件
     triggerFileInput() {
-      this.$refs.fileInput.click()  //出发文件输入框点击事件
+      this.$refs.fileInput.click();  // 出发文件输入框点击事件
     },
-    handleFileSelect(event){
+
+    // 处理文件选择
+    handleFileSelect(event) {
       const file = event.target.files[0]; // 获取选中文件
       if (!file) return; //没有文件就返回
 
@@ -52,57 +58,74 @@ export default {
       }
 
       this.selectedFile = file;
-      this.showUploadDialog = true;
+      this.showUploadDialog = true; // 打开上传对话框
       this.uploadStatus = null;
       this.uploadProgress = 0;
     },
-    performUpload() {
-      const formData = new FormData();
-      formData.append('video', this.selectedFile); // 将钻中的视频文件添加到FormData中
 
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${this.authStore.token}` //添加认证头部，包含token
-        },
-      };
-
-      this.uploadStatus = 'uploading';
-
-      axios.post('/api/upload', formData, config)
-      .then(response => {
-        this.uploadStatus = 'success';
-        this.historyStore.fetchHistory();
-        setTimeout(() => {
-          this.closeUploadDialog();
-          this.$emit('video-uploaded', response.data);
-        }, 1500);
-      })
-      .catch(error => {
-        this.uploadStatus = 'error';
-        console.error('上传失败:', error);
-      });
-    },
+    // 关闭上传对话框
     closeUploadDialog() {
-      this.showUploadDialog = false; // 关闭上传对话框
-      this.selectedFile = null; // 清空选中的文件
-      this.uploadProgress = 0;  //重置上传进度
-      this.uploadStatus = null;  //重置上传状态
+      this.showUploadDialog = false;
+      this.selectedFile = null;
+      this.uploadProgress = 0;
+      this.uploadStatus = null;
     },
+
+    // 上传视频
+    async performUpload() {
+      if (!this.selectedFile) return;
+
+      const formData = new FormData();
+      formData.append('file', this.selectedFile);
+
+      const videoName = this.selectedFile.name; // 获取文件名
+      const videoPath = URL.createObjectURL(this.selectedFile); // 生成临时路径（这通常是指向浏览器中本地文件的路径）
+
+      this.uploadStatus = 'uploading'; // 开始上传
+      try {
+        // 调用 API 上传视频
+        const response = await uploadVideo(videoPath, videoName);
+        console.log(response)
+        if (response.code === "0") { // 判断上传成功
+
+          const videoData = response.video_info;
+
+          // 存储视频信息到全局状态管理
+          const videoStore = useVideoStore();
+          videoStore.setVideoInfo({
+            video_id: videoData.video_id,
+            video_name: videoData.video_name,
+            video_path: videoData.video_path
+          });
+          console.log("现在的是video_id是"+videoStore.videoInfo.video_id)
+          if (response.code === "0") {
+            this.uploadStatus = 'success'; // 上传成功
+            this.uploadProgress = 100; // 设置进度条满
+          } else {
+            this.uploadStatus = 'error'; // 上传失败
+          }
+        }
+      }catch (error) {
+        this.uploadStatus = 'error'; // 发生错误
+        console.error(error);
+      }
+    },
+
+    // 处理选项卡点击事件
     handleTabClick(tab) {
       if (tab.id === 'analysis-history') {
-        this.$emit('toggle-view', 'history'); // 显示历史记录
+        this.$emit('toggle-view', 'history');
+      } else if (tab.id === 'user-information') {
+        this.$emit('toggle-view', 'userInfo');
+      } else if (tab.id === 'analysis-view') {
+        this.$emit('toggle-view', 'analysis');
       }
-      else if (tab.id === 'user-information') {
-        this.$emit('toggle-view', 'userInfo'); // 显示用户信息
-      }
-      else if (tab.id === 'analysis-view') {
-        this.$emit('toggle-view', 'analysis'); // 显示用户信息
-      }
-    },
+    }
   },
+
   setup() {
     const authStore = useUserStore() // 初始化身份验证
-    const historyStore = useHistoryStore()  //初始化历史记录
+    const historyStore = useHistoryStore()  // 初始化历史记录
 
     onMounted(() => {
       if (authStore.isLoggedIn && !authStore.userInfo) {
@@ -111,7 +134,7 @@ export default {
     })
 
     const hasHistory = computed(() => {
-      return historyStore.historyItems?.length > 0 //查看是否有历史记录
+      return historyStore.historyItems?.length > 0 // 查看是否有历史记录
     })
 
     return {

@@ -50,7 +50,7 @@
   font-weight: 500;
 }
 
-.check-btn,
+.update-btn,
 .delete-btn {
   font-size: 10px;
   margin: 2px 0 2px 0;
@@ -68,7 +68,7 @@
     cursor: not-allowed;
   }
 
-.check-btn {
+.update-btn {
   background: #2c3e50;
   color: white;
 }
@@ -87,7 +87,7 @@
     padding: 0.1rem 0.2rem;
     border-radius: 10px;
   }
-  .check-btn,
+  .update-btn,
   .delete-btn {
     font-size: 10px;
     padding: 0.4rem 0.8rem;

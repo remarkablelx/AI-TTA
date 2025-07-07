@@ -76,7 +76,7 @@ const sortByValidity = ref('asc');
         </span>
       </div>
       <div>
-        <button class="check-btn">查看</button>
+        <button class="update-btn">查看</button>
         <button class="delete-btn">删除</button>
       </div>
     </div>
@@ -203,7 +203,7 @@ const sortByValidity = ref('asc');
   font-weight: 500;
 }
 
-.check-btn,
+.update-btn,
 .delete-btn {
   font-size: 12px;
   padding: 0.5rem 1rem;
@@ -213,7 +213,7 @@ const sortByValidity = ref('asc');
   transition: all 0.3s ease;
 }
 
-.check-btn {
+.update-btn {
   background: #2c3e50;
   color: white;
 }
@@ -223,7 +223,7 @@ const sortByValidity = ref('asc');
   color: white;
 }
 
-.check-btn:hover,
+.update-btn:hover,
 .delete-btn:hover {
   transform: scale(1.1);
 }
@@ -236,7 +236,7 @@ const sortByValidity = ref('asc');
     font-size: 0.8rem;
     padding: 0.1rem 0.2rem;
   }
-  .check-btn,
+  .update-btn,
   .delete-btn {
     font-size: 10px;
     padding: 0.4rem 0.8rem;

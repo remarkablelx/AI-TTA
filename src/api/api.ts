@@ -189,6 +189,7 @@ try {
       page_num,
       page_size
     });
+    console.log(response);
     return response.data;
   } catch (error) {
     throw new Error('历史记录请求失败');
@@ -202,6 +203,7 @@ try {
       video_id,
       user_id,
     });
+    console.log(response);
     return response.data;
   } catch (error) {
     throw new Error('增填记录请求失败');
@@ -214,6 +216,7 @@ try {
     const response = await api.post('/record/get_record', {
       record_id,
     });
+    console.log(response);
     return response.data;
   } catch (error) {
     throw new Error('查看单个记录请求失败');
@@ -248,7 +251,7 @@ try {
 };
 
 // 筛选分析记录
-export const search_record = async (user_id:number,search:string,state:string,sort:number,page_num:number,page_size:number) => {
+export const search_record = async (user_id:number,search:string,state:number,sort:string,page_num:number,page_size:number) => {
 try {
     const response = await api.post('/record/search_record', {
       user_id,
@@ -263,5 +266,19 @@ try {
   } catch (error) {
     console.log('筛选分析记录请求失败'+error)
     throw new Error('筛选分析记录请求失败');
+  }
+};
+
+// 获取视频的API
+export const uploadVideo = async (video_path:string,video_name:string) => {
+try {
+    const response = await api.post('/video/upload_video', {
+      video_path,
+      video_name
+    });
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    throw new Error('视频请求失败');
   }
 };
