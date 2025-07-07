@@ -7,10 +7,12 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 # 初始化与配置加载
-
 def load_environment():
     # 加载环境变量并返回千帆 API Key
-    load_dotenv(".env")
+    current_path = os.path.dirname(os.path.abspath(__file__))
+    parent_path = os.path.dirname(current_path)
+    env_path = os.path.join(parent_path,'report_gen','.env')
+    load_dotenv(env_path)
     api_key = os.getenv("QIANFAN_API_KEY")
     if not api_key:
         raise ValueError("错误: 未在 .env 文件中找到 QIANFAN_API_KEY。")
@@ -48,7 +50,7 @@ def generate_report(input_json_path: str):
         batch_size = 10
 
         # 使用 ERNIE-Speed-8K 模型
-        ANALYSIS_MODEL = "deepseek-v3-241226"
+        ANALYSIS_MODEL = "deepseek-r1"
 
         print(f"\n--- 开始第一阶段：逐批次分析帧数据 (使用模型: {ANALYSIS_MODEL}) ---")
 
@@ -133,7 +135,9 @@ def generate_report(input_json_path: str):
         print("--- 第二阶段分析完成，报告已生成 ---")
 
         # 保存报告
-        output_dir = "../report"
+        current_path = os.path.dirname(os.path.abspath(__file__))
+        parent_path = os.path.dirname(current_path)
+        output_dir = os.path.join(parent_path, 'report')
         os.makedirs(output_dir, exist_ok=True)
 
         input_basename = os.path.splitext(os.path.basename(input_json_path))[0]
@@ -152,13 +156,4 @@ def generate_report(input_json_path: str):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="通过大模型生成乒乓球动作分析报告")
-    parser.add_argument(
-        '--input',
-        type=str,
-        default=r'../json/test_ball_detect_pose_detect.json',
-        help='输入的骨骼点JSON文件路径'
-    )
-    args = parser.parse_args()
-
-    generate_report(args.input)
+    generate_report("../json/tt_ball_detect_pose_detect.json")

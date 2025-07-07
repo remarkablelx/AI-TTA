@@ -1,6 +1,7 @@
 from models.result import db, Result
 from models.video import Video
 from models.record import Record
+from models.report import Report
 from aimodel.algorithm_logic import ball_detect, pose_detect, action_split, action_detect
 import os
 
@@ -90,7 +91,10 @@ class ResultService:
 
         except Exception as e:
             db.session.rollback()
-            return {"code": '-1','message':f"保存结果到数据库失败: {str(e)}"}
+            return {
+                "code": '-1',
+                'message':f"保存结果到数据库失败: {str(e)}"
+            }
 
         # 返回完整的分析结果
         return {
@@ -106,12 +110,28 @@ class ResultService:
         :param result_id: 结果ID
         :return: 结果详情字典
         """
-        result = Result.query.get(result_id)
-        return {
-            'code': 0,
-            'message': '视频分析成功',
-            'result': result.to_dict()
-        }
+        try:
+            result = Result.query.get(result_id)
+            video = Video.query.get(result.video_id)
+            report = Report.query.filter_by(result_id=result_id).first()
+            video_path = video.video_path
+            report_id = None
+            if report:
+                report_id = report.report_id
+            res = result.to_dict()
+            res['video_path'] = video_path
+            res['report_id'] = report_id
+            return {
+                'code': 0,
+                'message': '分析结果获取成功',
+                'result': res
+            }
+        except Exception as e:
+            db.session.rollback()
+            return {
+                "code": '-1',
+                'message':f"结果获取失败: {str(e)}"
+            }
 
     @staticmethod
     def set_result(result_id, update_data):
@@ -130,7 +150,7 @@ class ResultService:
             db.session.commit()
 
             return {
-                'code': '1',
+                'code': '0',
                 'message': '分析结果更新成功',
                 'updated_fields': { f"{field}": value for field, value in update_data.items() }
             }

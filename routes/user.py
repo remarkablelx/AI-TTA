@@ -1,6 +1,8 @@
 import json
+import os
 
-from  flask import  Blueprint, request, jsonify
+from  flask import  Blueprint, request, jsonify, send_file
+
 user = Blueprint('user',__name__)
 from services.user import UserService
 
@@ -71,7 +73,7 @@ def set_password():
 def set_personal_info():
     """更新个人信息"""
     # 定义可修改的字段
-    info={'nickname', 'avatar', 'sex', 'email', 'note', 'height', 'weight', 'location', 'birth'}
+    info={'nickname', 'sex', 'email', 'note', 'height', 'weight', 'location', 'birth'}
     # 获取请求JSON数据：用户编号，更新字典
     data = json.loads(request.data)
     user_id=data.get('user_id')
@@ -93,6 +95,36 @@ def get_personal_info():
     result = UserService.get_user_info(user_id)
     return jsonify(result)
 
+@user.route('/set_avatar', methods=["POST"])
+def set_avatar():
+    """设置用户头像"""
+    if 'avatar_file' not in request.files:
+        return {'code': '-1', 'message': '未上传文件'}
+    file = request.files['avatar_file']
 
+    user_id = request.form.get('user_id')
+
+    filename = file.filename
+    avatar_name = os.path.splitext(file.filename)[0]
+    file_ext = os.path.splitext(filename)[1].lower()
+
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    avatar_dir = os.path.join(project_root, 'avatar', f"{avatar_name}{file_ext}")
+    result = UserService.set_avatar(file, user_id, avatar_dir)
+    return jsonify(result)
+
+
+@user.route('/get_avatar', methods=["POST"])
+def get_avatar():
+    """获取用户头像"""
+    data = json.loads(request.data)
+    avatar = data.get('avatar')
+
+    return send_file(
+        avatar,
+        conditional=True,
+        etag=True
+    )
 
 
