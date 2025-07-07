@@ -13,12 +13,14 @@ def upload_video():
     if 'video_file' not in request.files:
         return {'code': '-1', 'message': '未上传文件'}
     file = request.files['video_file']
+    filename = file.filename
+    file_ext = os.path.splitext(filename)[1].lower()
 
     video_name = request.form.get('video_name', '未命名视频')
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
-    video_dir = os.path.join(project_root, 'aimodel', 'video',f"{video_name}")
+    video_dir = os.path.join(project_root, 'aimodel', 'video',f"{video_name}{file_ext}")
 
     # 调用服务层
     result = VideoService.upload_video(file, video_dir, video_name)

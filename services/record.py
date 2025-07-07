@@ -1,5 +1,6 @@
 from models.record import db, Record
 from models.video import Video
+from models.result import Result
 from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError, NoResultFound
 from sqlalchemy import or_
@@ -15,13 +16,13 @@ class RecordService:
         """
         try:
             # 查询记录并关联视频表获取视频名称
-            query = db.session.query(
-                Record,
-                Video.video_name
-            ).outerjoin(
-                Video, Record.video_id == Video.video_id
-            ).filter(
-                Record.user_id == user_id
+            query = (
+                db.session.query(
+                    Record,
+                    Video.video_name
+                )
+                .outerjoin(Video, Record.video_id == Video.video_id)
+                .filter(Record.user_id == user_id)
             )
 
             pagination = query.paginate(page=page_num, per_page=page_size, error_out=False)
@@ -82,17 +83,24 @@ class RecordService:
             ).scalar_one()
 
             video_name = None
+            result_id = None
             if record.video_id:
                 try:
                     video = db.session.execute(
                         db.select(Video).filter_by(video_id=record.video_id)
                     ).scalar_one()
                     video_name = video.video_name
+                    result = db.session.execute(
+                        db.select(Result).filter_by(video_id=record.video_id)
+                    ).scalar_one()
+                    result_id = result.result_id
                 except NoResultFound:
                     video_name = None
+                    result_id = None
 
             record_data = record.to_dict()
             record_data['video_name'] = video_name
+            record_data['result_id'] = result_id
             return {'code': '0','message': '记录获取成功','record':record_data}
         except Exception as e:
             return {'code': '-1', 'message': f'记录获取失败: {str(e)}'}
@@ -164,6 +172,7 @@ class RecordService:
             ).filter(
                 Record.user_id == user_id
             )
+
 
             # 状态筛选
             if state is not None:

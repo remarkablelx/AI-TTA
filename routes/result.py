@@ -8,10 +8,10 @@ from services.result import ResultService
 @result.route('/generate_result',methods=["POST"])
 def generate_result():
     """生成分析结果"""
-    # 获取请求JSON数据：视频编号
+    # 获取请求JSON数据：分析记录编号
     data = json.loads(request.data)
-    video_id = data.get('video_id')
-    res = ResultService.generate_result(video_id)
+    record_id = data.get('record_id')
+    res = ResultService.generate_result(record_id)
     return jsonify(res)
 
 @result.route('/get_result',methods=["POST"])

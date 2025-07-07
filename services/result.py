@@ -1,17 +1,21 @@
 from models.result import db, Result
 from models.video import Video
+from models.record import Record
 from aimodel.algorithm_logic import ball_detect, pose_detect, action_split, action_detect
 import os
 
 class ResultService:
     @staticmethod
-    def generate_result(video_id):
+    def generate_result(record_id):
         """
         视频分析流水线,根据视频编号获取视频并进行分析，保存到数据库并返回分析结果
-        :param video_id: 输入视频编号
+        :param record_id: 分析记录编号
         :return dict: 生成结果
         """
         #获取视频路径
+        record = Record.query.get(record_id)
+        record.state = 1
+        video_id = record.video_id
         video_path = Video.query.get(video_id).video_path
 
         if not os.path.exists(video_path):
@@ -76,6 +80,8 @@ class ResultService:
                 recognition_json_path=pipeline_results.get("recognition_json_path", "")
             )
 
+            record = Record.query.get(record_id)
+            record.state = 2
             db.session.add(result)
             db.session.commit()
 
