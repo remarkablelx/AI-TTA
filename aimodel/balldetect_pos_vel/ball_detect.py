@@ -225,7 +225,7 @@ def write_track(frames, ball_track, path_output_video, fps, trace=7):
     """
 
     height, width = frames[0].shape[:2]
-    out = cv2.VideoWriter(path_output_video, cv2.VideoWriter_fourcc(*'DIVX'),
+    out = cv2.VideoWriter(path_output_video, cv2.VideoWriter_fourcc(*'avc1'),
                           fps, (width, height))
     for frame in frames:
         out.write(frame)

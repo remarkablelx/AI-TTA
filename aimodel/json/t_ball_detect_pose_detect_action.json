@@ -1,0 +1,56 @@
+[
+    {
+        "person_id": 0,
+        "segment_frames": [
+            0,
+            14
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.9727193117141724
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            0,
+            14
+        ],
+        "predicted_label": "正手",
+        "confidence_score": 0.6002050042152405
+    },
+    {
+        "person_id": 2,
+        "segment_frames": [
+            0,
+            14
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.9999998807907104
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            0,
+            19
+        ],
+        "predicted_label": "正手",
+        "confidence_score": 0.998354434967041
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            0,
+            19
+        ],
+        "predicted_label": "正手",
+        "confidence_score": 1.0
+    },
+    {
+        "person_id": 2,
+        "segment_frames": [
+            0,
+            19
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.9998558759689331
+    }
+]

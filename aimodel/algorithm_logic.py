@@ -235,89 +235,89 @@ def report_generate(pose_json_path: str) -> Tuple[bool, Dict[str, Any]]:
         return False, {"error": f"调用脚本时发生意外错误: {str(e)}"}
 
 
-if __name__ == "__main__":
-    # INPUT_VIDEO = 'video/test.mp4'
-    #
-    # if not os.path.exists(INPUT_VIDEO):
-    #     print(f"错误: 初始输入视频不存在: {INPUT_VIDEO}")
-    #     exit(1)
-    #
-    # print("=" * 25 + " 开始执行端到端视频分析流水线 " + "=" * 25)
-    #
-    # # 创建一个主字典来收集所有路径
-    # pipeline_results = {}
-    #
-    # # --- 步骤 1: 球体轨迹跟踪 ---
-    # success, ball_result = ball_detect(video_path=INPUT_VIDEO)
-    # if not success:
-    #     print(f"流程终止于【球体跟踪】。错误: {ball_result.get('error')}")
-    #     exit(1)
-    # # 将此步骤的结果合并到主字典中
-    # pipeline_results.update(ball_result)
-    # print("步骤 1/4 完成。")
-    #
-    #
-    # # --- 步骤 2: 人体骨骼点检测 ---
-    # success, pose_result = pose_detect(video_path=INPUT_VIDEO)
-    # if not success:
-    #     print(f"流程终止于【骨骼点检测】。错误: {pose_result.get('error')}")
-    #     exit(1)
-    # # 将此步骤的结果合并到主字典中
-    # pipeline_results.update(pose_result)
-    # print("步骤 2/4 完成。")
-    #
-    #
-    # # --- 步骤 3: 基于球轨迹的动作切分 ---
-    # success, segment_result = action_split(ball_json_path=pipeline_results["json_out_path"])
-    # if not success:
-    #     print(f"流程终止于【动作片段切分】。错误: {segment_result.get('error')}")
-    #     exit(1)
-    # # 将此步骤的结果合并到主字典中
-    # pipeline_results.update(segment_result)
-    # print("步骤 3/4 完成。")
-    #
-    #
-    # # --- 步骤 4: 动作识别与视频生成 ---
-    # success, final_result = action_detect(
-    #     video_input_path=INPUT_VIDEO,
-    #     pose_json_path=pipeline_results["json_out_path"],
-    #     segment_json_path=pipeline_results["segment_json_path"],
-    # )
-    # if not success:
-    #     print(f"流程终止于【动作识别】。错误: {final_result.get('error')}")
-    #     exit(1)
-    # # 将此步骤的结果合并到主字典中
-    # pipeline_results.update(final_result)
-    # print("步骤 4/4 完成。")
-    #
-    #
-    # print("\n" + "=" * 25 + " 端到端视频分析流程全部成功完成! " + "=" * 25)
-    # print("\n所有生成的中间及最终文件路径:")
-    # # 打印包含所有路径的主字典
-    # for key, value in pipeline_results.items():
-    #     if value:
-    #         print(f"  - {key:<25}: {value}")
+# if __name__ == "__main__":
+#     INPUT_VIDEO = 'video/test.mp4'
+#
+#     if not os.path.exists(INPUT_VIDEO):
+#         print(f"错误: 初始输入视频不存在: {INPUT_VIDEO}")
+#         exit(1)
+#
+#     print("=" * 25 + " 开始执行端到端视频分析流水线 " + "=" * 25)
+#
+#     # 创建一个主字典来收集所有路径
+#     pipeline_results = {}
+#
+#     # --- 步骤 1: 球体轨迹跟踪 ---
+#     success, ball_result = ball_detect(video_path=INPUT_VIDEO)
+#     if not success:
+#         print(f"流程终止于【球体跟踪】。错误: {ball_result.get('error')}")
+#         exit(1)
+#     # 将此步骤的结果合并到主字典中
+#     pipeline_results.update(ball_result)
+#     print("步骤 1/4 完成。")
+#
+#
+#     # --- 步骤 2: 人体骨骼点检测 ---
+#     success, pose_result = pose_detect(video_path=INPUT_VIDEO)
+#     if not success:
+#         print(f"流程终止于【骨骼点检测】。错误: {pose_result.get('error')}")
+#         exit(1)
+#     # 将此步骤的结果合并到主字典中
+#     pipeline_results.update(pose_result)
+#     print("步骤 2/4 完成。")
+#
+#
+#     # --- 步骤 3: 基于球轨迹的动作切分 ---
+#     success, segment_result = action_split(ball_json_path=pipeline_results["json_out_path"])
+#     if not success:
+#         print(f"流程终止于【动作片段切分】。错误: {segment_result.get('error')}")
+#         exit(1)
+#     # 将此步骤的结果合并到主字典中
+#     pipeline_results.update(segment_result)
+#     print("步骤 3/4 完成。")
+#
+#
+#     # --- 步骤 4: 动作识别与视频生成 ---
+#     success, final_result = action_detect(
+#         video_input_path=INPUT_VIDEO,
+#         pose_json_path=pipeline_results["json_out_path"],
+#         segment_json_path=pipeline_results["segment_json_path"],
+#     )
+#     if not success:
+#         print(f"流程终止于【动作识别】。错误: {final_result.get('error')}")
+#         exit(1)
+#     # 将此步骤的结果合并到主字典中
+#     pipeline_results.update(final_result)
+#     print("步骤 4/4 完成。")
+#
+#
+#     print("\n" + "=" * 25 + " 端到端视频分析流程全部成功完成! " + "=" * 25)
+#     print("\n所有生成的中间及最终文件路径:")
+#     # 打印包含所有路径的主字典
+#     for key, value in pipeline_results.items():
+#         if value:
+#             print(f"  - {key:<25}: {value}")
 
-    # 报告生成测试
-    POSE_JSON_INPUT = os.path.join('aimodel', 'json', 'test_pose_detect.json')
-
-    if not os.path.exists(POSE_JSON_INPUT):
-        print(f"\n!!! 错误: 必需的输入文件不存在 !!!")
-        print(f"测试 `report_generate` 需要一个骨骼点JSON文件。")
-        print(f"请确保路径 '{POSE_JSON_INPUT}' 是一个有效的文件路径。")
-        print(f"您可能需要先运行 `pose_detect` 函数来生成它。")
-    else:
-        print("\n" + "=" * 25 + " 开始测试 'report_generate' 函数 " + "=" * 25)
-
-        success, result = report_generate(pose_json_path=POSE_JSON_INPUT)
-
-        print("\n----------- 调用结果 -----------")
-        if success:
-            print("状态: \033[92m成功\033[0m")  # 绿色
-            print("输出文件路径:")
-            for key, value in result.items():
-                print(f"  - {key}: {value}")
-        else:
-            print("状态: \033[91m失败\033[0m")  # 红色
-            print("错误信息:", result.get('error', '未知错误'))
-        print("---------------------------------")
+    # # 报告生成测试
+    # POSE_JSON_INPUT = os.path.join('aimodel', 'json', 'test_pose_detect.json')
+    #
+    # if not os.path.exists(POSE_JSON_INPUT):
+    #     print(f"\n!!! 错误: 必需的输入文件不存在 !!!")
+    #     print(f"测试 `report_generate` 需要一个骨骼点JSON文件。")
+    #     print(f"请确保路径 '{POSE_JSON_INPUT}' 是一个有效的文件路径。")
+    #     print(f"您可能需要先运行 `pose_detect` 函数来生成它。")
+    # else:
+    #     print("\n" + "=" * 25 + " 开始测试 'report_generate' 函数 " + "=" * 25)
+    #
+    #     success, result = report_generate(pose_json_path=POSE_JSON_INPUT)
+    #
+    #     print("\n----------- 调用结果 -----------")
+    #     if success:
+    #         print("状态: \033[92m成功\033[0m")  # 绿色
+    #         print("输出文件路径:")
+    #         for key, value in result.items():
+    #             print(f"  - {key}: {value}")
+    #     else:
+    #         print("状态: \033[91m失败\033[0m")  # 红色
+    #         print("错误信息:", result.get('error', '未知错误'))
+    #     print("---------------------------------")

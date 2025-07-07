@@ -130,7 +130,7 @@ def visualize_and_save(video_path, output_path, person_tracks, recognition_resul
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     # 2. 设置视频写入器
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    fourcc = cv2.VideoWriter_fourcc(*'avc1')
     writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
 
     # 3. 准备字体
