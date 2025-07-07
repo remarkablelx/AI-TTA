@@ -30,27 +30,7 @@ const formattedTime = computed(() =>
 )
 
 // 异步函数：获取视频 URL
-const fetchVideoUrls = async (videoId) => {
-  try {
-    loading.value = true // 设置加载状态为 true
-    const token = auth.token // 获取用户的 token
-    const response = await axios.get(`/api/video/${videoId}`, { // 发送请求获取视频 URL
-      headers: {
-        Authorization: `Bearer ${token}` // 使用 Bearer Token 进行身份认证
-      }
-    })
-
-    // 如果请求成功，设置视频源 URL
-    if (response.data.success) {
-      originalUrl.value = response.data.data.original
-      processedUrl.value = response.data.data.processed || '' // 如果没有处理后的视频，设置为空
-    }
-  } catch (err) {
-    // 如果请求失败，设置错误信息
-    error.value = err.response?.data?.message || '获取视频地址失败'
-  } finally {
-    loading.value = false // 请求完成，设置加载状态为 false
-  }
+const fetchVideoUrls = async (videoPath) => {
 }
 
 // 监听 currentAnalysis 的变化，获取新的视频 ID 并调用 fetchVideoUrls 获取视频 URL

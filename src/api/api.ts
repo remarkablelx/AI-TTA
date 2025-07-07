@@ -2,8 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:5000/', // 后端接口基础 URL
-  timeout: 5000, // 请求超时时间
+  baseURL: 'http://192.168.223.250:5000/', // 后端接口基础 URL
 });
 
 
@@ -269,16 +268,62 @@ try {
   }
 };
 
-// 获取视频的API
-export const uploadVideo = async (video_path:string,video_name:string) => {
-try {
-    const response = await api.post('/video/upload_video', {
-      video_path,
-      video_name
+export const uploadVideo = async (video_file: File, video_name: string) => {
+  try {
+    const formData = new FormData();
+    formData.append('video_file', video_file); // 添加视频文件
+    formData.append('video_name', video_name); // 添加视频名称
+
+    const response = await api.post('/video/upload_video', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // 确保请求以 multipart 形式发送
+      }
     });
+
     console.log(response.data);
     return response.data;
   } catch (error) {
+    console.log("视频上传失败"+error)
     throw new Error('视频请求失败');
+  }
+};
+
+
+// 查看视频分析API
+export const get_result = async (result_id:string) => {
+try {
+    const response = await api.post('/result/get_result', {
+      result_id
+    });
+    return response.data;
+  } catch (error) {
+    console.log('查看视频分析请求失败'+error)
+    throw new Error('查看视频分析请求失败');
+  }
+};
+
+
+export const get_video = async (video_path: string) => {
+  try {
+    const response = await api.post('/result/get_video', {
+      video_path
+    }, { responseType: 'blob' }); // 确保后端返回视频文件 (Blob)
+    return response.data;
+  } catch (error) {
+    console.log('获取视频请求失败' + error);
+    throw new Error('获取视频请求失败');
+  }
+};
+
+// 生成分析结果 API
+export const generate_result = async (video_id:number) => {
+try {
+    const response = await api.post('/result/generate_result', {
+      video_id
+    });
+    return response.data;
+  } catch (error) {
+    console.log('生成分析结果请求失败'+error)
+    throw new Error('生成分析结果请求失败');
   }
 };

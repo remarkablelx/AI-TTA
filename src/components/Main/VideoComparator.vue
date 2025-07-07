@@ -1,199 +1,110 @@
-<!-- VideoComparator.vue -->
 <template>
   <div class="video-comparator">
-    <!-- 全局控制按钮 -->
     <div class="global-controls">
       <h2>视频分析（原视频 / 处理视频）</h2>
-      <!-- 同步播放按钮 -->
       <button class="sync-button" @click="toggleSync">
         {{ isSyncing ? '断开同步' : '同步播放' }}
       </button>
     </div>
     <div class="comparison-container">
       <!-- 原始视频 -->
-      <div
-        class="video-panel"
-        :class="{ 'fullscreen-mode': isZoomed.original }"
-        ref="originalPanel"
-      >
+      <div class="video-panel" :class="{ 'fullscreen-mode': isZoomed.original }">
         <div class="video-wrapper">
           <div class="video-frame">
-            <!-- 原始视频播放组件 -->
             <video
               ref="originalVideo"
-              :src="originalSrc"
+              :src="props.originalSrc"
               @play="handlePlay('original')"
               @pause="handlePause('original')"
               @timeupdate="e => updateProgress(e, 'original')"
             ></video>
           </div>
-          <!-- 原视频控制 -->
-          <video-controls
-            type="original"
-            :progress="progress.original"
-            :currentTime="currentTime.original"
-            :duration="duration.original"
-            :is-zoomed="isZoomed.original"
-            @toggle-play="togglePlay('original')"
-            @seek="handleSeek($event, 'original')"
-            @toggle-zoom="toggleZoom('original')"
-          />
         </div>
       </div>
 
       <!-- 处理后视频 -->
-      <div
-        class="video-panel"
-        :class="{ 'fullscreen-mode': isZoomed.processed }"
-        ref="processedPanel"
-      >
+      <div class="video-panel" :class="{ 'fullscreen-mode': isZoomed.processed }">
         <div class="video-wrapper">
           <div class="video-frame">
-            <!-- 处理后视频播放组件 -->
             <video
               ref="processedVideo"
-              :src="processedSrc"
+              :src="props.processedSrc"
               @play="handlePlay('processed')"
               @pause="handlePause('processed')"
               @timeupdate="e => updateProgress(e, 'processed')"
             ></video>
           </div>
-          <!-- 处理后视频控制 -->
-          <video-controls
-            type="processed"
-            :progress="progress.processed"
-            :currentTime="currentTime.processed"
-            :duration="duration.processed"
-            :is-zoomed="isZoomed.processed"
-            @toggle-play="togglePlay('processed')"
-            @seek="handleSeek($event, 'processed')"
-            @toggle-zoom="toggleZoom('processed')"
-          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import VideoControls from "@/components/Main/VideoControls.vue";
+<script setup lang="ts">
+import { ref } from 'vue';
 
-export default {
-  components: { VideoControls },
-  props: {
-    // 原始视频源和处理后视频源
-    originalSrc: String,
-    processedSrc: String
-  },
-  data() {
-    return {
-      // 同步播放状态
-      isSyncing: false,
-      // 视频播放进度
-      progress: { original: 0, processed: 0 },
-      // 当前播放时间
-      currentTime: { original: 0, processed: 0 },
-      // 视频时长
-      duration: { original: 0, processed: 0 },
-      // 视频是否全屏
-      isZoomed: { original: false, processed: false }
-    };
-  },
-  mounted() {
-    // 监听全屏事件
-    document.addEventListener('fullscreenchange', this.handleFullscreenChange);
-  },
-  beforeDestroy() {
-    // 组件销毁时移除事件监听
-    document.removeEventListener('fullscreenchange', this.handleFullscreenChange);
-  },
-  methods: {
-    // 切换播放/暂停
-    togglePlay(type) {
-      const video = this.$refs[`${type}Video`];
-      video.paused ? video.play() : video.pause();
-    },
-    // 更新视频播放进度
-    updateProgress(event, type) {
-      const video = event.target;
-      this.currentTime[type] = video.currentTime;
-      this.duration[type] = video.duration;
-      this.progress[type] = (video.currentTime / video.duration) * 100 || 0;
+// 在 script setup 中解构 props
+const props = defineProps({
+  originalSrc: String,
+  processedSrc: String
+});
 
-      // 如果开启同步播放，保持两个视频同步
-      if (this.isSyncing && type === "original") {
-        this.$refs.processedVideo.currentTime = video.currentTime;
-      }
-    },
-    // 处理视频进度条拖动
-    handleSeek(value, type) {
-      const video = this.$refs[`${type}Video`];
-      video.currentTime = (value * video.duration) / 100;
-    },
-    // 切换同步播放状态
-    toggleSync() {
-      this.isSyncing = !this.isSyncing;
-      if (this.isSyncing) {
-        this.syncVideos();
-      }
-    },
-    // 同步播放两个视频
-    async syncVideos() {
-      await Promise.all([
-        this.$refs.originalVideo.play(),
-        this.$refs.processedVideo.play()
-      ]);
-    },
-    // 处理播放事件
-    handlePlay() {
-      if (this.isSyncing) this.syncVideos();
-    },
-    // 处理暂停事件
-    handlePause() {
-      if (this.isSyncing) {
-        this.$refs.originalVideo.pause();
-        this.$refs.processedVideo.pause();
-      }
-    },
+// 视频同步控制
+const isSyncing = ref(false);
+const progress = ref({ original: 0, processed: 0 });
+const currentTime = ref({ original: 0, processed: 0 });
+const duration = ref({ original: 0, processed: 0 });
+const isZoomed = ref({ original: false, processed: false });
 
-    // 全屏控制方法
-    async toggleZoom(type) {
-      const panel = this.$refs[`${type}Panel`];
-      if (!this.isZoomed[type]) {
-        await this.enterFullscreen(panel);
-        this.isZoomed = { ...this.isZoomed, [type]: true };
-      } else {
-        await this.exitFullscreen();
-        this.isZoomed = { ...this.isZoomed, [type]: false };
-      }
-    },
-    // 进入全屏模式
-    async enterFullscreen(element) {
-      if (element.requestFullscreen) {
-        return element.requestFullscreen();
-      } else if (element.webkitRequestFullscreen) { /* Safari */
-        return element.webkitRequestFullscreen();
-      } else if (element.msRequestFullscreen) { /* IE11 */
-        return element.msRequestFullscreen();
-      }
-      console.warn('Fullscreen API is not supported');
-    },
-    // 退出全屏模式
-    async exitFullscreen() {
-      if (document.exitFullscreen) {
-        await document.exitFullscreen();
-      } else if (document.webkitExitFullscreen) { /* Safari */
-        await document.webkitExitFullscreen();
-      } else if (document.msExitFullscreen) { /* IE11 */
-        await document.msExitFullscreen();
-      }
-    },
-    // 监听全屏变化事件
-    handleFullscreenChange() {
-      if (!document.fullscreenElement) {
-        this.isZoomed = { original: false, processed: false };
-      }
-    }
+// 切换播放/暂停
+const togglePlay = (type: 'original' | 'processed') => {
+  const video = document.querySelector(`video[src="${type === 'original' ? props.originalSrc : props.processedSrc}"]`) as HTMLVideoElement;
+  video.paused ? video.play() : video.pause();
+};
+
+// 更新视频播放进度
+const updateProgress = (event: Event, type: 'original' | 'processed') => {
+  const video = event.target as HTMLVideoElement;
+  currentTime.value[type] = video.currentTime;
+  duration.value[type] = video.duration;
+  progress.value[type] = (video.currentTime / video.duration) * 100 || 0;
+
+  // 如果同步播放，保持两个视频同步
+  if (isSyncing.value && type === 'original') {
+    const processedVideo = document.querySelector(`video[src="${props.processedSrc}"]`) as HTMLVideoElement;
+    processedVideo.currentTime = video.currentTime;
+  }
+};
+
+// 切换同步播放状态
+const toggleSync = () => {
+  isSyncing.value = !isSyncing.value;
+  if (isSyncing.value) {
+    syncVideos();
+  }
+};
+
+// 同步播放两个视频
+const syncVideos = () => {
+  const originalVideo = document.querySelector(`video[src="${props.originalSrc}"]`) as HTMLVideoElement;
+  const processedVideo = document.querySelector(`video[src="${props.processedSrc}"]`) as HTMLVideoElement;
+
+  Promise.all([originalVideo.play(), processedVideo.play()]);
+};
+
+// 处理播放事件
+const handlePlay = (type: 'original' | 'processed') => {
+  if (isSyncing.value) syncVideos();
+};
+
+// 处理暂停事件
+const handlePause = (type: 'original' | 'processed') => {
+  if (isSyncing.value) {
+    const originalVideo = document.querySelector(`video[src="${props.originalSrc}"]`) as HTMLVideoElement;
+    const processedVideo = document.querySelector(`video[src="${props.processedSrc}"]`) as HTMLVideoElement;
+
+    originalVideo.pause();
+    processedVideo.pause();
   }
 };
 </script>
@@ -260,13 +171,13 @@ video {
   z-index: 1;
 }
 
-.global-controls h2{
+.global-controls h2 {
   margin: 10px 0 0 20px;
 }
 
 .sync-button {
   background: #2c3e50;
-  margin: 6px 0 0 20px ;
+  margin: 6px 0 0 20px;
   color: white;
   border: none;
   padding: 10px 24px;

@@ -76,15 +76,14 @@ export default {
       if (!this.selectedFile) return;
 
       const formData = new FormData();
-      formData.append('file', this.selectedFile);
-
+      formData.append('video_file', this.selectedFile); // 添加视频文件
       const videoName = this.selectedFile.name; // 获取文件名
-      const videoPath = URL.createObjectURL(this.selectedFile); // 生成临时路径（这通常是指向浏览器中本地文件的路径）
+
 
       this.uploadStatus = 'uploading'; // 开始上传
       try {
         // 调用 API 上传视频
-        const response = await uploadVideo(videoPath, videoName);
+        const response = await uploadVideo(this.selectedFile, videoName);
         console.log(response)
         if (response.code === "0") { // 判断上传成功
 
@@ -98,6 +97,8 @@ export default {
             video_path: videoData.video_path
           });
           console.log("现在的是video_id是"+videoStore.videoInfo.video_id)
+          console.log("现在的是video_name是"+videoStore.videoInfo.video_name)
+          console.log("现在的是video_path是"+videoStore.videoInfo.video_path)
           if (response.code === "0") {
             this.uploadStatus = 'success'; // 上传成功
             this.uploadProgress = 100; // 设置进度条满
