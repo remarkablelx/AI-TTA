@@ -12,7 +12,7 @@
 import {ref, onMounted, watch} from 'vue';
 import VideoComparator from '@/components/Main/VideoComparator.vue'; // 引入子组件
 import { get_video,get_result,get_json} from '@/api/api'; // 引入获取视频的 API
-import VisualizationPanel from '@/components/Main/Visualization.vue';
+import Visualization from '@/components/Main/Visualization.vue';
 // 直接在定义 props 时声明
 const props = defineProps({
   result_id: {
@@ -81,7 +81,7 @@ const loadAllData = async () => {
 
     // 1. 加载视频分析结果
     resultData.value = await get_result(props.result_id);
-    console.log('分析结果:', resultData.value);
+    console.log("完整 resultData:", JSON.parse(JSON.stringify(resultData.value)));
 
     // 2. 并行加载视频和JSON数据
     await Promise.all([
@@ -95,6 +95,7 @@ const loadAllData = async () => {
     showVisualization.value = false;
   }
 };
+
 
 // 获取视频数据的函数
 const loadVideos = async () => {
@@ -124,11 +125,16 @@ const loadJsonData = async () => {
     if (!resultData.value) {
       console.log('resultData is not loaded yet');
     }
+    console.log("开始")
+    console.log(resultData.ball_json_path)
+    console.log(resultData.pose_json_path)
+    console.log(resultData.segment_json_path)
+    console.log("结束")
     // 并行加载所有JSON数据
     const [ballJson, actionJson, segmentJson] = await Promise.all([
-      get_json(resultData.value.ball_json_path),
-      get_json(resultData.value.pose_json_path), // 假设动作数据在pose_json_path
-      get_json(resultData.value.segment_json_path)
+      get_json(resultData.ball_json_path),
+      get_json(resultData.pose_json_path), // 假设动作数据在pose_json_path
+      get_json(resultData.segment_json_path),
     ]);
 
     ballData.value = ballJson;

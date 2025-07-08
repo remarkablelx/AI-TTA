@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: 'http://192.168.223.250:5000', // 后端接口基础 URL
+  baseURL: 'http://10.244.186.196:5000', // 后端接口基础 URL
 });
 
 
@@ -316,7 +316,6 @@ try {
 };
 
 // 筛选用户
-
 export const filter_user = async (search:string,sort:string,order:string,sex:number,page_num:number,page_size:number) => {
 try {
     const response = await api.post('/admin/filter_user', {
@@ -337,23 +336,52 @@ try {
 
 
 
+//查看用户列表API
+export const AdminGetAllRecord = async (page_num:number,page_size:number) => {
+try {
+    const response = await api.post('/admin/all_record', {
+      page_num,
+      page_size
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log('查看分析记录列表请求失败'+error)
+    throw new Error('查看分析记录列表请求失败');
+  }
+};
+
+// 删除记录
+export const AdminDeleteRecord = async (record_id:number) => {
+try {
+    const response = await api.post('/admin/delete_record', {
+      record_id,
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log('删除记录请求失败'+error)
+    throw new Error('删除记录失败');
+  }
+};
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// 筛选记录
+export const filter_record = async (search:string,order:string,state:number,page_num:number,page_size:number) => {
+try {
+    const response = await api.post('/admin/filter_record', {
+      search,
+      order, // 按照时间顺序排序
+      state,  // 状态筛选
+      page_num, //当前页面号
+      page_size, //页面大小
+    });
+    return response.data;
+  } catch (error) {
+    console.log('筛选所有用户的分析记录请求失败'+error)
+    throw new Error('筛选所有用户的分析记录请求失败');
+  }
+};
 
 
 

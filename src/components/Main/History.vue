@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { get_allRecord, add_record, get_record, delete_record, search_record, generate_result} from "@/api/api.ts";
+import { get_allRecord, add_record, get_record, delete_record, search_record, generate_result } from "@/api/api.ts";
 import { useUserStore } from "@/stores/userStore.ts";
 import { useVideoStore } from "@/stores/videoStore.ts"
 import Video from "@/components/Main/Video.vue";
+
 // 获取 Pinia store
 const userStore = useUserStore();
 const videoStore = useVideoStore();
-
 
 // 定义事件
 const emit = defineEmits(['toggle-view']);
@@ -20,9 +20,8 @@ const page_size = ref(6); // 每页条数
 const video_id = videoStore.videoInfo.video_id;
 const result_id = ref<number>(0); // 确保 result_id 初始化为有效的数字，默认为 0
 
-
 // 控制显示记录详情的模态框
-const showModal = ref(false); // 控制模态框的显示
+const showModal = ref(false);
 const recordDetails = ref({
   expiration_time: '',
   record_id: 0,
@@ -36,24 +35,45 @@ const recordDetails = ref({
 
 // 筛选量
 const searchQuery = ref(""); // 搜索框内容
-const selectedState = ref(""); // 默认状态为“分析中” (0: "分析中", 1: "已完成", 2: "已失效")
-const sortBy = ref<'time' | null>('time'); // 当前排序的列，默认按“分析时间”排序
+const selectedState = ref(""); // 默认状态为"分析中" (0: "分析中", 1: "已完成", 2: "已失效")
+const sortBy = ref<'time' | null>('time'); // 当前排序的列，默认按"分析时间"排序
 const sortOrder = ref(1); // 排序方式（1：升序，-1：降序），默认升序
 
 // 默认搜索框的值
 const defaultSearchValue = ""; // 默认值为空，表示所有记录
+
+
+// 新增时间格式化函数
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/\//g, '-');
+  } catch (e) {
+    return dateString; // 如果解析失败，返回原始字符串
+  }
+};
+
 // 获取历史记录
-const fetchRecords = async (page_num:number,page_size:number) => {
+const fetchRecords = async (page_num: number, page_size: number) => {
   try {
     const data = await get_allRecord(user_id, page_num, page_size);
-    console.log('获取到的data是'+data.records)
+    console.log('获取到的data是' + data.records);
     records.value = data.records; // 假设返回的数据中包含 records
     console.log('历史记录请求成功:', records.value);
   } catch (error) {
     console.error('历史记录请求失败:', error);
   }
 };
-
 
 // 删除分析记录
 const deleteRecord = async (record_id: number) => {
@@ -73,12 +93,12 @@ const deleteRecord = async (record_id: number) => {
   }
 };
 
-
 const viewRecord = async (record_id: number) => {
   try {
     console.log("现在的record_id是" + record_id);
     const response = await get_record(record_id);
     const record = response.record; // 这是从响应中提取的 record 对象
+    console.log(record)
     if (record) {
       // 更新 recordDetails
       recordDetails.value = {
@@ -92,12 +112,11 @@ const viewRecord = async (record_id: number) => {
         video_name: record.video_name
       };
       console.log("现在的recordDetails是", recordDetails.value);
-      result_id.value = recordDetails.result_id
-      console.log("现在的result_id是"+record_id)
-
+      result_id.value = recordDetails.result_id;
+      console.log("现在的result_id是" + result_id);
 
       // 发送事件给父组件，切换到分析界面
-      emit('toggle-view', 'analysis', record.result_id)
+      emit('toggle-view', 'analysis', record.result_id);
     } else {
       console.error('没有找到记录');
     }
@@ -106,22 +125,19 @@ const viewRecord = async (record_id: number) => {
   }
 };
 
-
 // 关闭模态框
 const closeModal = () => {
   showModal.value = false;
 };
 
-
 // 筛选分析记录
 const searchRecords = async () => {
   try {
-
     const state = selectedState.value === "" ? null : selectedState.value;
     const sort = sortOrder.value === 1 ? 'time_asc' : 'time_desc';
 
     const data = await search_record(user_id, searchQuery.value || defaultSearchValue, state, sort, page_num.value, page_size.value);
-    console.log("获得的data"+data)
+    console.log("获得的data" + data);
     records.value = data.records;  // 假设返回的数据中包含 records
     console.log('筛选记录成功:', records.value);
   } catch (error) {
@@ -132,11 +148,9 @@ const searchRecords = async () => {
 // 进行分析函数
 const analyzeRecord = async (record_id: number) => {
   try {
-    console.log("record_id是"+record_id)
+    console.log("record_id是" + record_id);
     const analysisResult = await generate_result(record_id); // 调用生成分析结果的API
-
     result_id.value = analysisResult.result.result_id; // 存储结果 ID
-
     console.log('分析结果存储成功:', analysisResult);
   } catch (error) {
     console.error('分析失败:', error);
@@ -146,38 +160,28 @@ const analyzeRecord = async (record_id: number) => {
 // 映射状态值到文本
 const getStatusText = (status: number) => {
   switch (status) {
-    case 0:
-      return '分析中';
-    case 1:
-      return '分析中';
-    case 2:
-      return '已完成';
-    default:
-      return '未知状态';
+    case 0: return '分析中';
+    case 1: return '分析中';
+    case 2: return '已完成';
+    default: return '未知状态';
   }
 };
 
 // 映射状态值到样式
 const getStatusClass = (status: number) => {
   switch (status) {
-    case 0:
-      return 'status-processing'; // 分析中
-    case 1:
-      return 'status-expired'; // 已完成
-    case 2:
-      return 'status-completed'; // 已失效
-    default:
-      return '';
+    case 0: return 'status-processing'; // 分析中
+    case 1: return 'status-expired'; // 已完成
+    case 2: return 'status-completed'; // 已失效
+    default: return '';
   }
 };
 
 // 切换排序（分析时间）
 const toggleSort = () => {
-  // 切换排序状态（升序、降序）
   sortOrder.value = sortOrder.value === 1 ? -1 : 1;
   searchRecords(); // 更新记录
 };
-
 
 // 切换分页时保持当前筛选条件
 const changePage = (newPageNum: number) => {
@@ -187,25 +191,23 @@ const changePage = (newPageNum: number) => {
   }
 };
 
-
 // 组件加载时调用 fetchRecords
 onMounted(() => {
-  fetchRecords(page_num.value,page_size.value)
+  fetchRecords(page_num.value, page_size.value);
 });
-
-
 </script>
 
 <template>
   <div class="container">
     <h2>历史记录</h2>
-    <div>
+    <div class="search-bar">
       <input
           v-model="searchQuery"
           type="text"
-          placeholder="搜索内容"
-          @input="searchRecords"
+          placeholder="输入视频名称搜索"
+          @keyup.enter="searchRecords"
       />
+      <button class="search-btn" @click="searchRecords">搜索</button>
     </div>
 
     <!-- 使用 v-if="false" 隐藏子组件，仍然传递 result_id -->
@@ -220,10 +222,10 @@ onMounted(() => {
       <div>视频名称</div>
       <div>
         <select class="filter-dropdown" v-model="selectedState" @change="searchRecords">
-          <option value=''>状态</option>
+          <option value=''>已失效</option>
           <option value=0>分析中</option>
-          <option value=1>已完成</option>
-          <option value=2>已失效</option>
+          <option value=1>分析中</option>
+          <option value=2>已完成</option>
         </select>
       </div>
       <div class="expiry-indicator">
@@ -232,36 +234,22 @@ onMounted(() => {
       <div>操作</div>
     </div>
 
- <!-- 显示历史记录 -->
-    <div v-for="record in records" :key="record.record_id" class="history-item">
-      <div class="time-col">{{ record.time }}</div>
-      <div>{{ record.video_name }}</div>
-      <div>
-        <span :class="['status-badge', getStatusClass(record.state)]">{{ getStatusText(record.state) }}</span>
-      </div>
-      <div class="expiry-indicator">
-        <span>{{ record.expiration_time }}</span>
-      </div>
-      <div>
-        <button class="analyze-btn" @click="analyzeRecord(record.record_id)">分析</button>
-        <button class="view-btn" @click="viewRecord(record.record_id)">查看</button>
-        <button class="delete-btn" @click="deleteRecord(record.record_id)">删除</button>
-      </div>
+  <!-- 显示历史记录 -->
+  <div v-for="record in records" :key="record.record_id" class="history-item">
+    <div class="time-col">{{ formatDate(record.time) }}</div>
+    <div>{{ record.video_name }}</div>
+    <div>
+      <span :class="['status-badge', getStatusClass(record.state)]">{{ getStatusText(record.state) }}</span>
     </div>
-
-      <!-- 模态框显示记录详情 -->
-    <div v-if="showModal" class="modal">
-      <div class="modal-content">
-        <span class="close-btn" @click="closeModal">&times;</span>
-        <h3>分析记录详情</h3>
-        <p><strong>分析记录编号：</strong>{{ recordDetails?.record_id }}</p>
-        <p><strong>分析时间：</strong>{{ recordDetails?.time }}</p>
-        <p><strong>视频名称：</strong>{{ recordDetails?.video_name }}</p>
-        <p><strong>状态：</strong>{{ getStatusText(recordDetails?.state) }}</p>
-        <p><strong>有效期：</strong>{{ recordDetails?.expiration_time }}</p>
-        <p><strong>用户ID：</strong>{{ recordDetails?.user_id }}</p>
-      </div>
+    <div class="expiry-indicator">
+      <span>{{ formatDate(record.expiration_time) }}</span>
     </div>
+    <div>
+      <button class="analyze-btn" @click="analyzeRecord(record.record_id)">分析</button>
+      <button class="view-btn" @click="viewRecord(record.record_id)">查看</button>
+      <button class="delete-btn" @click="deleteRecord(record.record_id)">删除</button>
+    </div>
+  </div>
 
     <!-- 分页 -->
     <div class="pagination">
@@ -269,117 +257,91 @@ onMounted(() => {
       <span>页码: {{ page_num }}</span>
       <button @click="changePage(page_num + 1)">下一页</button>
     </div>
-
   </div>
 </template>
 
-
 <style scoped>
-
-/* 调整整体容器大小 */
+/* 整体容器样式 */
 .container {
-  width: 100%; /* 使其宽度自适应父容器 */
-  max-width: 2100px; /* 设置最大宽度，可以调整 */
-  min-width: 1240px;  /* 设置最小宽度，可以调整 */
-  padding: 20px; /* 调整内边距 */
+  width: 100%;
+  max-width: 2100px;
+  min-width: 1240px;
+  padding: 20px;
   box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
 }
 
-/* 筛选框样式 */
-.filter-dropdown {
-  background-color: transparent; /* 透明背景 */
-  border: 1px solid transparent; /* 边框颜色透明 */
-  color: #5a6a85; /* 字体颜色与小标题一致 */
-  font-size: 15px; /* 调整字体大小 */
-  padding: 5px 10px;
-  border-radius: 5px;
+/* 标题样式 */
+h2 {
+  color: #2c3e50;
+  margin-bottom: 20px;
+  font-size: 24px;
 }
 
-.filter-dropdown option {
-  color: #5a6a85; /* 设置选项的字体颜色 */
-}
-.filter-dropdown {
-  width: 86px; /* 设置下拉框的宽度为 200px */
-}
-
-.search-bar input {
+/* 搜索框样式 */
+input[type="text"] {
   width: 100%;
   padding: 10px;
-  margin: 10px 0;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
 }
 
+/* 表格头部样式 - 修改为固定列宽 */
 .virtual-header {
-  display: flex;
-  align-items: center; /* 保持元素垂直居中对齐 */
+  display: grid;
+  grid-template-columns: 300px 200px 150px 300px 200px;
   background: #e1e9ea;
   border-radius: 8px 8px 0 0;
   padding: 1rem;
   font-weight: 600;
   color: #5a6a85;
+  margin-bottom: 5px;
 }
 
-.virtual-header > div:nth-child(1) {
-  margin-right: 290px; /* 调整第一个和第二个字段之间的间距 */
+.virtual-header > div {
+  padding: 0 10px;
 }
 
-.virtual-header > div:nth-child(2) {
-  margin-right: 140px; /* 调整第二个和第三个字段之间的间距 */
-}
-
-.virtual-header > div:nth-child(3) {
-  margin-right: 100px; /* 调整第三个和第四个字段之间的间距 */
-}
-
-.virtual-header > div:nth-child(4) {
-  margin-right: 170px; /* 调整第四个和第五个字段之间的间距 */
-}
-
-.virtual-header > div:last-child {
-  margin-right: 0; /* 移除最后一个字段的右侧间距 */
-}
-
-.history-item {
-  background: white;
-  gap: 1rem;
-  padding: 1rem;
-  display: grid;
-  grid-template-columns: 2fr 1fr 1.6fr 1fr 0.8fr;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.time-col {
+/* 时间列特殊处理 */
+.virtual-header .time-col {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
 }
 
-.history-item > div:nth-child(1) {
-  margin-right: 30px; /* B和C之间的间距 */
+/* 历史记录项样式 - 与头部相同的列宽 */
+.history-item {
+  display: grid;
+  grid-template-columns: 300px 200px 150px 300px 200px;
+  align-items: center;
+  background: white;
+  padding: 1rem;
+  margin-bottom: 5px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.history-item > div:nth-child(2) {
-  margin-right: 30px; /* B和C之间的间距 */
-}
-.history-item > div:nth-child(3) {
-  margin-right: 30px; /* B和C之间的间距 */
-}
-.history-item > div:nth-child(4) {
-  margin-right: 30px; /* B和C之间的间距 */
-}
-.history-item > div:nth-child(5) {
-  margin-right: 30px; /* B和C之间的间距 */
+.history-item > div {
+  padding: 0 10px;
 }
 
+/* 操作按钮容器 */
+.history-item > div:last-child {
+  display: flex;
+  gap: 5px;
+}
+
+/* 状态标签样式 */
 .status-badge {
+  display: inline-block;
   font-size: 0.8rem;
   padding: 0.3rem 0.8rem;
   border-radius: 20px;
   font-weight: 500;
+  text-align: center;
 }
 
 .status-processing {
@@ -397,29 +359,14 @@ onMounted(() => {
   color: #ff5c5c;
 }
 
-.expiry-indicator {
-  font-size: 0.85rem;
-  color: #5a6a85;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-}
-
-.expiring-soon {
-  color: #ff5c5c;
-  font-weight: 500;
-}
-
-.analyze-btn,
-.delete-btn,
-.view-btn {
-  font-size: 12px;
+/* 按钮样式 */
+button {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 30px;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 12px;
 }
 
 .analyze-btn {
@@ -427,155 +374,112 @@ onMounted(() => {
   color: white;
 }
 
-.delete-btn {
-  background: #ff5c5c;
-  color: white;
-}
-.view-btn{
+.view-btn {
   background: #007BFF;
   color: white;
 }
 
-.analyze-btn:hover,
-.delete-btn:hover,
-.view-btn:hover {
-  transform: scale(1.1);
+.delete-btn {
+  background: #ff5c5c;
+  color: white;
 }
 
-@media (max-width: 768px) {
-  .history-item {
-    gap: 0.2rem;
-  }
-  .status-badge {
-    font-size: 0.8rem;
-    padding: 0.1rem 0.2rem;
-  }
-  .update-btn,
-  .delete-btn,
-  .view-btn{
-    font-size: 10px;
-    padding: 0.4rem 0.8rem;
-  }
-  .time-col {
-    font-size: 80%;
-  }
+button:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
+
+/* 分页样式 */
 .pagination {
   display: flex;
   justify-content: center;
+  align-items: center;
   margin-top: 20px;
+  gap: 15px;
 }
 
 .pagination button {
   background-color: #2c3e50;
   color: white;
-  padding: 5px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  padding: 8px 16px;
 }
 
 .pagination button:hover {
   background-color: #34495e;
 }
 
-
-/* Container for the button */
-.add-record-btn-container {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end; /* Align the button to the right */
+.pagination span {
+  color: #5a6a85;
 }
 
-/* Button Styling */
-.add-record-btn {
-  background-color: #2c3e50; /* Green background */
-  color: white; /* White text */
-  font-size: 16px;
-  font-weight: bold;
-  padding: 12px 24px; /* Adequate padding for the button */
-  border: none;
-  border-radius: 5px; /* Rounded corners */
-  cursor: pointer;
-  transition: all 0.3s ease-in-out; /* Smooth hover transition */
-}
-
-/* Hover Effect */
-.add-record-btn:hover {
-  background-color: #45a049; /* Darker green on hover */
-  transform: scale(1.05); /* Slightly increase button size */
-}
-
-/* Focus Effect */
-.add-record-btn:focus {
-  outline: none; /* Remove the default focus outline */
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Add a soft shadow on focus */
-}
-
-/* Active Effect */
-.add-record-btn:active {
-  background-color: #3e8e41; /* Even darker green when clicked */
-  transform: scale(0.98); /* Slightly reduce button size */
-}
-
-/* Modal Background */
-.modal {
-  display: block;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
+/* 筛选下拉框样式 */
+.filter-dropdown {
+  background-color: transparent;
+  border: 1px solid transparent;
+  color: #5a6a85;
+  font-size: 15px;
+  padding: 5px 5px;
+  border-radius: 5px;
   width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-/* Modal Content */
-.modal-content {
-  background: linear-gradient(to right, #fff, #f7f7f7); /* Gradient background */
-  margin: 10% auto;
-  padding: 30px;
-  border-radius: 12px; /* Rounded corners */
-  width: 50%;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
-  font-family: 'Arial', sans-serif;
-}
-
-/* Modal Header */
-.modal-content h2 {
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 20px;
-}
-
-/* Modal Paragraph */
-.modal-content p {
-  font-size: 16px;
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 10px;
-}
-
-.close-btn {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close-btn:hover,
-.close-btn:focus {
-  color: black;
-  text-decoration: none;
   cursor: pointer;
 }
-.modal-content .validity {
-  font-size: 14px;
-  color: #888;
-  margin-top: 20px;
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+  .container {
+    min-width: 100%;
+    padding: 10px;
+  }
+
+  .virtual-header,
+  .history-item {
+    grid-template-columns: 200px 150px 80px 150px 120px;
+    font-size: 14px;
+  }
+
+  button {
+    padding: 0.4rem 0.8rem;
+    font-size: 11px;
+  }
 }
 
+@media (max-width: 768px) {
+  .virtual-header,
+  .history-item {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
 
+  .virtual-header > div,
+  .history-item > div {
+    width: 100%;
+    text-align: left;
+  }
+
+  .history-item > div:last-child {
+    justify-content: flex-start;
+  }
+}
+
+.search-bar {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+  min-width: 30px;
+  max-width: 50px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.search-btn  {
+
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
 </style>
