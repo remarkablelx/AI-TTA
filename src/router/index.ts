@@ -16,6 +16,9 @@ import AdminLogin from "@/components/Admin/AdminLogin.vue";
 import Admin from "@/components/Admin/Admin.vue";
 import VideoControls from "@/components/Main/VideoControls.vue";
 import Video from "@/components/Main/Video.vue";
+import AdminBar from "@/components/Admin/AdminBar.vue";
+import UserManagement from "@/components/Admin/UserManagement.vue";
+import Visualization from "@/components/Main/Visualization.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,7 +61,7 @@ const router = createRouter({
     {
       path:'/1',
       name:'1',
-      component: Video
+      component: Visualization
     },
     {
       path:'/2',
@@ -74,6 +77,11 @@ const router = createRouter({
       path:'/admin',
       name:'admin',
       component: Admin
+    },
+    {
+      path:'/adminuser',
+      name:'adminuser',
+      component: UserManagement
     }
   ],
 })

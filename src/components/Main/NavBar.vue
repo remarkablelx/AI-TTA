@@ -1,11 +1,10 @@
 <script>
 import { computed, onMounted } from 'vue'
 import logo from '@/components/Home/Logo.vue'
-import { useUserStore } from '@/stores/auth2.js' // 导入身份验证
-import { useHistoryStore } from '@/stores/history' // 导入历史记录
 import axios from 'axios'
-import { uploadVideo } from "@/api/api.js";
+import {add_record, uploadVideo} from "@/api/api.js";
 import { useVideoStore } from '@/stores/videoStore.js'; // 引入视频 store
+import{useUserStore} from "@/stores/userStore.js";
 
 export default {
   components: { logo },
@@ -91,14 +90,21 @@ export default {
 
           // 存储视频信息到全局状态管理
           const videoStore = useVideoStore();
+          const userStore = useUserStore();
           videoStore.setVideoInfo({
             video_id: videoData.video_id,
             video_name: videoData.video_name,
             video_path: videoData.video_path
           });
+          // 调用新增分析记录的 API
+          const recordResponse = await add_record(videoStore.videoInfo.video_id, userStore.userInfo.user_id);
+
+
           console.log("现在的是video_id是"+videoStore.videoInfo.video_id)
           console.log("现在的是video_name是"+videoStore.videoInfo.video_name)
           console.log("现在的是video_path是"+videoStore.videoInfo.video_path)
+          console.log("历史记录上传消息是："+recordResponse.message);
+          console.log("历史记录是："+recordResponse.record);
           if (response.code === "0") {
             this.uploadStatus = 'success'; // 上传成功
             this.uploadProgress = 100; // 设置进度条满
@@ -125,24 +131,6 @@ export default {
   },
 
   setup() {
-    const authStore = useUserStore() // 初始化身份验证
-    const historyStore = useHistoryStore()  // 初始化历史记录
-
-    onMounted(() => {
-      if (authStore.isLoggedIn && !authStore.userInfo) {
-        authStore.fetchUserInfo() // 如果已登录且没有用户信息，获取用户信息
-      }
-    })
-
-    const hasHistory = computed(() => {
-      return historyStore.historyItems?.length > 0 // 查看是否有历史记录
-    })
-
-    return {
-      authStore,
-      historyStore,
-      hasHistory
-    }
   },
 }
 </script>

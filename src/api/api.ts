@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: 'http://192.168.223.250:5000/', // 后端接口基础 URL
+  baseURL: 'http://192.168.223.250:5000', // 后端接口基础 URL
 });
 
 
@@ -72,18 +72,7 @@ export const captcha_loginUser = async (account: string, captcha_id: string, sms
   }
 };
 
-// 用户密码登录API
-export const adminLogin = async (account: string, password: string,) => {
-try {
-    const response = await api.post('/admin/login', {
-      account,
-      password,
-    });
-    return response.data;
-  } catch (error) {
-    throw new Error('密码登录请求失败');
-  }
-};
+
 
 // 获取个人信息API
 export const get_personalInfo = async (user_id: number) => {
@@ -215,7 +204,7 @@ try {
     const response = await api.post('/record/get_record', {
       record_id,
     });
-    console.log(response);
+    console.log("原回复是："+response);
     return response.data;
   } catch (error) {
     throw new Error('查看单个记录请求失败');
@@ -268,6 +257,107 @@ try {
   }
 };
 
+
+// 管理员登录API
+export const adminLogin = async (account: string, password: string,) => {
+try {
+    const response = await api.post('/admin/login', {
+      account,
+      password,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error('密码登录请求失败');
+  }
+};
+
+//查看用户列表API
+export const get_allUser = async (page_num:number,page_size:number) => {
+try {
+    const response = await api.post('/admin/all_user', {
+      page_num,
+      page_size
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log('查看用户列表请求失败'+error)
+    throw new Error('查看用户列表请求失败');
+  }
+};
+
+
+// 查看用户详细信息
+export const get_user_info = async (user_id:number) => {
+try {
+    const response = await api.post('/admin/get_user_info', {
+      user_id,
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log('查看用户详细信息请求失败'+error)
+    throw new Error('查看用户详细信息失败');
+  }
+};
+
+// 删除用户
+export const delete_user = async (user_id:number) => {
+try {
+    const response = await api.post('/admin/delete_user', {
+      user_id,
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.log('删除用户请求失败'+error)
+    throw new Error('删除用户失败');
+  }
+};
+
+// 筛选用户
+
+export const filter_user = async (search:string,sort:string,order:string,sex:number,page_num:number,page_size:number) => {
+try {
+    const response = await api.post('/admin/filter_user', {
+      search,
+      sort, // 要排序的字段
+      order, // 排序方式
+      sex,  // 性别筛选
+      page_num, //当前页面号
+      page_size, //页面大小
+
+    });
+    return response.data;
+  } catch (error) {
+    console.log('筛选分析记录请求失败'+error)
+    throw new Error('筛选分析记录请求失败');
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 上传视频
 export const uploadVideo = async (video_file: File, video_name: string) => {
   try {
     const formData = new FormData();
@@ -289,9 +379,23 @@ export const uploadVideo = async (video_file: File, video_name: string) => {
 };
 
 
-// 查看视频分析API
-export const get_result = async (result_id:string) => {
+// 生成分析结果 API
+export const generate_result = async (record_id:number) => {
 try {
+    const response = await api.post('/result/generate_result', {
+      record_id
+    });
+    return response.data;
+  } catch (error) {
+    console.log('生成分析结果请求失败'+error)
+    throw new Error('生成分析结果请求失败');
+  }
+};
+
+// 查看视频分析结果API
+export const get_result = async (result_id:number) => {
+try {
+    console.log("当前的get_result是"+result_id)
     const response = await api.post('/result/get_result', {
       result_id
     });
@@ -302,7 +406,7 @@ try {
   }
 };
 
-
+// 获取视频API
 export const get_video = async (video_path: string) => {
   try {
     const response = await api.post('/result/get_video', {
@@ -315,15 +419,15 @@ export const get_video = async (video_path: string) => {
   }
 };
 
-// 生成分析结果 API
-export const generate_result = async (video_id:number) => {
-try {
-    const response = await api.post('/result/generate_result', {
-      video_id
-    });
+// 获取JSON文件API
+export const get_json = async (json_path: string) => {
+  try {
+    const response = await api.post('/result/get_json', {
+      json_path
+    } );
     return response.data;
   } catch (error) {
-    console.log('生成分析结果请求失败'+error)
-    throw new Error('生成分析结果请求失败');
+    console.log('获取json请求失败' + error);
+    throw new Error('获取json请求失败');
   }
 };

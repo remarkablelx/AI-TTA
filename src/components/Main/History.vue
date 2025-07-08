@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { get_allRecord, add_record, get_record, delete_record, search_record } from "@/api/api.ts";
+import { get_allRecord, add_record, get_record, delete_record, search_record, generate_result} from "@/api/api.ts";
 import { useUserStore } from "@/stores/userStore.ts";
 import { useVideoStore } from "@/stores/videoStore.ts"
+import Video from "@/components/Main/Video.vue";
 // 获取 Pinia store
 const userStore = useUserStore();
 const videoStore = useVideoStore();
+
+
+// 定义事件
+const emit = defineEmits(['toggle-view']);
 
 // 示例状态和变量
 const records = ref([]); // 存储获取的历史记录
@@ -13,11 +18,22 @@ const user_id = userStore.userInfo.user_id;
 const page_num = ref(1); // 页码
 const page_size = ref(6); // 每页条数
 const video_id = videoStore.videoInfo.video_id;
+const result_id = ref<number>(0); // 确保 result_id 初始化为有效的数字，默认为 0
 
 
 // 控制显示记录详情的模态框
 const showModal = ref(false); // 控制模态框的显示
-const recordDetails = ref<any>(null); // 存储获取到的记录详情
+const recordDetails = ref({
+  expiration_time: '',
+  record_id: 0,
+  result_id: 0,
+  state: 0,
+  time: '',
+  user_id: 0,
+  video_id: 0,
+  video_name: ''
+});
+
 // 筛选量
 const searchQuery = ref(""); // 搜索框内容
 const selectedState = ref(""); // 默认状态为“分析中” (0: "分析中", 1: "已完成", 2: "已失效")
@@ -39,22 +55,6 @@ const fetchRecords = async (page_num:number,page_size:number) => {
 };
 
 
-// 新增历史记录
-const addRecord = async () => {
-  try {
-    const response = await add_record(video_id, user_id); // user_id 从 Pinia store 获取
-    console.log(video_id);
-    if (response.code === "0") {
-      console.log('记录添加成功');
-      fetchRecords(page_num.value, page_size.value);
-    } else {
-      console.error('记录添加失败');
-    }
-  } catch (error) {
-    console.error('新增历史记录失败:', error);
-  }
-};
-
 // 删除分析记录
 const deleteRecord = async (record_id: number) => {
   console.log(record_id);
@@ -64,7 +64,7 @@ const deleteRecord = async (record_id: number) => {
     console.log(response);
     if (response.code === "0") {
       console.log('记录删除成功');
-      fetchRecords(page_num.value, page_size.value);
+      await fetchRecords(page_num.value, page_size.value);
     } else {
       console.error('记录删除失败');
     }
@@ -74,16 +74,38 @@ const deleteRecord = async (record_id: number) => {
 };
 
 
-// 查看记录的函数
 const viewRecord = async (record_id: number) => {
   try {
-    const data = await get_record(record_id);
-    recordDetails.value = data.record; // 将返回的记录信息存储到`recordDetails`
-    showModal.value = true; // 显示模态框
+    console.log("现在的record_id是" + record_id);
+    const response = await get_record(record_id);
+    const record = response.record; // 这是从响应中提取的 record 对象
+    if (record) {
+      // 更新 recordDetails
+      recordDetails.value = {
+        expiration_time: record.expiration_time,
+        record_id: record.record_id,
+        result_id: record.result_id,
+        state: record.state,
+        time: record.time,
+        user_id: record.user_id,
+        video_id: record.video_id,
+        video_name: record.video_name
+      };
+      console.log("现在的recordDetails是", recordDetails.value);
+      result_id.value = recordDetails.result_id
+      console.log("现在的result_id是"+record_id)
+
+
+      // 发送事件给父组件，切换到分析界面
+      emit('toggle-view', 'analysis', record.result_id)
+    } else {
+      console.error('没有找到记录');
+    }
   } catch (error) {
     console.error('查看记录失败:', error);
   }
 };
+
 
 // 关闭模态框
 const closeModal = () => {
@@ -107,15 +129,29 @@ const searchRecords = async () => {
   }
 };
 
+// 进行分析函数
+const analyzeRecord = async (record_id: number) => {
+  try {
+    console.log("record_id是"+record_id)
+    const analysisResult = await generate_result(record_id); // 调用生成分析结果的API
+
+    result_id.value = analysisResult.result.result_id; // 存储结果 ID
+
+    console.log('分析结果存储成功:', analysisResult);
+  } catch (error) {
+    console.error('分析失败:', error);
+  }
+};
+
 // 映射状态值到文本
 const getStatusText = (status: number) => {
   switch (status) {
     case 0:
       return '分析中';
     case 1:
-      return '已完成';
+      return '分析中';
     case 2:
-      return '已失效';
+      return '已完成';
     default:
       return '未知状态';
   }
@@ -127,9 +163,9 @@ const getStatusClass = (status: number) => {
     case 0:
       return 'status-processing'; // 分析中
     case 1:
-      return 'status-completed'; // 已完成
+      return 'status-expired'; // 已完成
     case 2:
-      return 'status-expired'; // 已失效
+      return 'status-completed'; // 已失效
     default:
       return '';
   }
@@ -171,10 +207,9 @@ onMounted(() => {
           @input="searchRecords"
       />
     </div>
-    <!-- 新增历史记录按钮 -->
-    <div class="add-record-btn-container">
-      <button @click="addRecord" class="add-record-btn">新增历史记录</button>
-    </div>
+
+    <!-- 使用 v-if="false" 隐藏子组件，仍然传递 result_id -->
+    <Video :result_id="result_id" v-if="false" />
 
     <!-- 表格头部 -->
     <div class="virtual-header">
@@ -208,8 +243,8 @@ onMounted(() => {
         <span>{{ record.expiration_time }}</span>
       </div>
       <div>
+        <button class="analyze-btn" @click="analyzeRecord(record.record_id)">分析</button>
         <button class="view-btn" @click="viewRecord(record.record_id)">查看</button>
-        <button class="update-btn" @click="updateRecord(record.record_id, 1, record.video_name, record.expiration_time)">修改</button>
         <button class="delete-btn" @click="deleteRecord(record.record_id)">删除</button>
       </div>
     </div>
@@ -323,6 +358,23 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.history-item > div:nth-child(1) {
+  margin-right: 30px; /* B和C之间的间距 */
+}
+
+.history-item > div:nth-child(2) {
+  margin-right: 30px; /* B和C之间的间距 */
+}
+.history-item > div:nth-child(3) {
+  margin-right: 30px; /* B和C之间的间距 */
+}
+.history-item > div:nth-child(4) {
+  margin-right: 30px; /* B和C之间的间距 */
+}
+.history-item > div:nth-child(5) {
+  margin-right: 30px; /* B和C之间的间距 */
+}
+
 .status-badge {
   font-size: 0.8rem;
   padding: 0.3rem 0.8rem;
@@ -359,7 +411,7 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.update-btn,
+.analyze-btn,
 .delete-btn,
 .view-btn {
   font-size: 12px;
@@ -370,7 +422,7 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.update-btn {
+.analyze-btn {
   background: #2c3e50;
   color: white;
 }
@@ -384,7 +436,7 @@ onMounted(() => {
   color: white;
 }
 
-.update-btn:hover,
+.analyze-btn:hover,
 .delete-btn:hover,
 .view-btn:hover {
   transform: scale(1.1);
