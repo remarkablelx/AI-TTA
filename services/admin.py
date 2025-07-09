@@ -104,7 +104,8 @@ class AdminService:
             user = User.query.get(user_id)
             return {
                 'code': 0,
-                'message': '用户信息获取成功','user_info':user.to_dict()
+                'message': '用户信息获取成功',
+                'user_info':user.to_dict()
             }
 
         except Exception as e:
