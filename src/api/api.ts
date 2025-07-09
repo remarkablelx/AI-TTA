@@ -463,7 +463,7 @@ export const get_json = async (json_path: string) => {
 // 获取分析报告API
 export const create_report = async (result_id:number) => {
 try {
-    console.log("当前的get_result是"+result_id)
+    console.log("当前的result_id是"+result_id)
     const response = await api.post('/report/create_report', {
       result_id
     });
@@ -489,16 +489,51 @@ try {
 };
 
 // 删除分析报告API
-export const delete_report = async (report_id
-:number) => {
+export const delete_report = async (report_id:number) => {
 try {
     console.log("当前的report_id是"+report_id)
     const response = await api.post('/report/delete_report', {
       report_id
     });
+    console.log("当前的response.data"+response)
     return response.data;
   } catch (error) {
     console.log('查看分析报告请求失败'+error)
     throw new Error('查看分析报告请求失败');
   }
 };
+
+// 上传设置头像
+export const set_avatar = async (avatar_file: File, user_id: number) => {
+  try {
+    const formData = new FormData();
+    formData.append('avatar_file', avatar_file);
+    formData.append('user_id', user_id.toString());
+
+    const response = await api.post('/user/set_avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('设置头像失败', error);
+    throw new Error('设置请求失败');
+  }
+};
+
+// 获取头像
+export const get_avatar = async (avatar: string) => {
+  try {
+    const response = await api.post('/user/get_avatar', { avatar }, {
+      responseType: 'blob'  // 重要：指定响应类型为blob
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('获取头像失败', error);
+    throw new Error('获取请求失败');
+  }
+};
+

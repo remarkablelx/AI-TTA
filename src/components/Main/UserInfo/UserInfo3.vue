@@ -46,8 +46,14 @@
                 <tr>
                   <td>头像</td>
                   <td>
-                    <img :src="form.avatarUrl" alt="用户头像" class="user-avatar" @click="triggerFileInput"/>
-                    <input type="file" ref="fileInput" style="display: none;" @change="handleFileUpload" accept="image/*"/>
+                    <img :src="form.avatarUrl" alt="用户头像" class="user-avatar" @click="triggerAvatarInput"/>
+                    <input
+                      type="file"
+                      ref="avatarInput"
+                      style="display: none;"
+                      @change="handleAvatarUpload"
+                      accept="image/*"
+                    />
                   </td>
                   <td>昵称</td>
                   <td><input type="text" v-model="form.userName" /></td>
@@ -93,10 +99,17 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import {getCaptcha, cancel_account, update_personalInfo, get_personalInfo} from "@/api/api.ts";
-import { useUserStore } from '@/stores/userStore.js';  // 导入状态管理
+import {getCaptcha, cancel_account, update_personalInfo, get_personalInfo, set_avatar,get_avatar} from "@/api/api.ts";
+import { useUserStore } from '@/stores/userStore.ts';  // 导入状态管理
 import { useRouter } from 'vue-router';  // 引入 Vue Router
 import Logo from "@/components/Home/Logo.vue";
+
+const props = defineProps({
+  userInfo: {
+    type: Object,
+    required: true,
+  },
+});
 
 // 路由实例，用于跳转页面
 const router = useRouter();
@@ -114,6 +127,45 @@ const captchaInput = ref('');       // 验证码输入
 const captchaId = ref('');          // 用于存储验证码 ID
 const captchaText = ref('');        // 用于存储验证码文本
 
+
+// 独立的头像上传 ref
+const avatarInput = ref<HTMLInputElement | null>(null);
+
+// 触发头像上传
+const triggerAvatarInput = () => {
+  avatarInput.value?.click();
+};
+
+// 头像上传处理
+const handleAvatarUpload = async (event: Event) => {
+  const fileInput = event.target as HTMLInputElement;
+  if (fileInput.files && fileInput.files[0]) {
+    const file = fileInput.files[0];
+
+    try {
+      // 1. 上传头像到后端
+      const uploadResponse = await set_avatar(file, user_id);
+
+      if (uploadResponse.code === '0') {
+        // 2. 获取新头像
+        const avatarResponse = await get_avatar(uploadResponse.avatar);
+
+        // 3. 更新表单中的头像URL
+        form.value.avatarUrl = URL.createObjectURL(avatarResponse);
+
+        // 4. 可选：更新全局用户信息
+        userStore.userInfo.avatarUrl = form.value.avatarUrl;
+        alert('头像更新成功');
+      } else {
+        alert('头像上传失败: ' + uploadResponse.message);
+      }
+    } catch (error) {
+      console.error('头像处理失败:', error);
+      alert('头像处理失败');
+    }
+  }
+};
+
 // 定义表单数据类型
 interface Form {
   avatarUrl: string;
@@ -129,18 +181,7 @@ interface Form {
 }
 
 // 创建表单数据的响应式变量
-const form = ref<Form>({
-  avatarUrl: '',
-  userName: '',
-  gender: 0,
-  location: '',
-  height: '',
-  weight: '',
-  email: '',
-  phonenumber: '',
-  personalNote: '',
-  registrationDate: ''
-});
+const form = ref({ ...props.userInfo });
 
 // 提交编辑表单
 const handleSubmit = async () => {
@@ -198,26 +239,12 @@ const closeModal = () => {
 // 显示编辑模态框并填充数据
 const handleEdit = () => {
   // 填充表单数据
-  form.value.avatarUrl = userStore.userInfo?.avatarUrl || '';
-  form.value.userName = userStore.userInfo?.userName || '';
-  form.value.gender = userStore.userInfo?.gender || -1 ;
-  form.value.location = userStore.userInfo?.location || '';
-  form.value.height = userStore.userInfo?.height || '';
-  form.value.weight = userStore.userInfo?.weight || '';
-  form.value.email = userStore.userInfo?.email || '';
-  form.value.phonenumber = userStore.userInfo?.account || '';
-  form.value.personalNote = userStore.userInfo?.personalNote || '';
-  form.value.registrationDate = userStore.userInfo?.registrationDate || '';
-
+  form.value = { ...props.userInfo };
   showEditModal.value = true; // 打开编辑弹窗
 };
 
 
-// 头像上传
-const triggerFileInput = () => {
-  const fileInput = document.querySelector<HTMLInputElement>('input[type="file"]');
-  fileInput?.click(); // 触发文件上传框
-};
+
 
 // 退出登录处理
 const handleCancel = () => {
@@ -475,5 +502,19 @@ const handleChangePassword = () => {
   height: auto;   /* 高度自适应 */
 }
 
+.user-avatar {
+  width: 80px;          /* 设置宽度 */
+  height: 80px;         /* 设置高度，与宽度相同 */
+  border-radius: 50%;   /* 圆形效果 */
+  object-fit: cover;    /* 确保图片填充但不失真 */
+  cursor: pointer;      /* 鼠标悬停时显示手型指针 */
+  border: 2px solid #ddd; /* 添加边框 */
+  transition: all 0.3s ease; /* 平滑过渡效果 */
+}
+
+.user-avatar:hover {
+  transform: scale(1.05); /* 悬停时轻微放大 */
+  box-shadow: 0 0 10px rgba(0,0,0,0.2); /* 添加阴影效果 */
+}
 
 </style>

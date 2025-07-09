@@ -99,4 +99,7 @@ const toggleCollapse = () => {
 }
 </script>
 
-<style scoped src="@/assets/styles/NavBar.css"></style>
+<style scoped src="@/assets/styles/NavBar.css">
+
+
+</style>

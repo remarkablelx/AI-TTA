@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { get_allRecord, add_record, get_record, delete_record, search_record, generate_result } from "@/api/api.ts";
 import { useUserStore } from "@/stores/userStore.ts";
 import { useVideoStore } from "@/stores/videoStore.ts"
-import Video from "@/components/Main/Video.vue";
+import Video from "@/components/Main/Analysis/Video.vue";
 
 // 获取 Pinia store
 const userStore = useUserStore();
@@ -200,14 +200,17 @@ onMounted(() => {
 <template>
   <div class="container">
     <h2>历史记录</h2>
-    <div class="search-bar">
+    <div class="search-container">
       <input
           v-model="searchQuery"
           type="text"
           placeholder="输入视频名称搜索"
+          class="search-input"
           @keyup.enter="searchRecords"
       />
-      <button class="search-btn" @click="searchRecords">搜索</button>
+      <button class="search-btn" @click="searchRecords">
+        <span>搜索</span>
+      </button>
     </div>
 
     <!-- 使用 v-if="false" 隐藏子组件，仍然传递 result_id -->
@@ -461,25 +464,43 @@ button:hover {
   }
 }
 
-.search-bar {
+.search-container {
   display: flex;
   gap: 10px;
-  flex: 1;
-  min-width: 30px;
-  max-width: 50px;
+  margin-bottom: 20px;
+  width: 100%;
+  max-width: 400px;
+  align-items: stretch; /* 确保子元素高度一致 */
 }
 
-.search-bar input {
+.search-input {
   flex: 1;
-  padding: 8px 12px;
+  padding: 10px 15px;
   border: 1px solid #ddd;
   border-radius: 4px;
+  font-size: 14px;
   min-width: 200px;
+  transition: border-color 0.3s;
+  height: 40px; /* 固定高度 */
+  box-sizing: border-box; /* 包含padding */
+  line-height: 20px; /* 确保文本垂直居中 */
 }
 
-.search-btn  {
-
-  transition: all 0.3s ease;
-  font-size: 15px;
+.search-btn {
+  padding: 0 20px; /* 调整垂直padding为0 */
+  background-color: #2c3e50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+  height: 40px; /* 与输入框相同高度 */
+  box-sizing: border-box; /* 包含padding */
+  line-height: 40px; /* 确保文本垂直居中 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
+
 </style>

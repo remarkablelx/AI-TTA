@@ -31,9 +31,9 @@
 <script>
 import { ref } from 'vue'
 import NavBar from '@/components/Main/NavBar.vue'
-import UserInfo from '@/components/Main/UserInfo.vue'
-import History from '@/components/Main/History.vue'
-import Video from "@/components/Main/Video.vue"
+import UserInfo from '@/components/Main/UserInfo/UserInfo.vue'
+import History from '@/components/Main/History/History.vue'
+import Video from "@/components/Main/Analysis/Video.vue"
 
 export default {
   components: { NavBar, UserInfo, History, Video },

@@ -36,7 +36,7 @@ export default {
       isCollapsed: false,
       isUserManagementVisible: false,
       isRecordManagementVisible: false,
-      activeTab: 'user-list',  // Ensure that the active tab state is set correctly
+      activeTab: 'user-list',
     };
   },
   methods: {
@@ -44,13 +44,13 @@ export default {
       this.isCollapsed = !this.isCollapsed;
     },
     toggleView(view) {
-      // Ensure that the correct tab visibility is toggled
+
       if (view === 'userList') {
-        this.isRecordManagementVisible = false;  // Hide the record management
-        this.isUserManagementVisible = !this.isUserManagementVisible;  // Toggle the user management visibility
+        this.isRecordManagementVisible = false;
+        this.isUserManagementVisible = !this.isUserManagementVisible;
       } else if (view === 'recordList') {
         this.isUserManagementVisible = false;  // Hide the user management
-        this.isRecordManagementVisible = !this.isRecordManagementVisible;  // Toggle the record management visibility
+        this.isRecordManagementVisible = !this.isRecordManagementVisible;
       }
     },
     // 过渡钩子

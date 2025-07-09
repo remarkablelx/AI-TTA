@@ -26,22 +26,21 @@
       :registrationDate="UserInfo.registrationDate"
     />
       <h1>
-        <UserInfo3  form=""/>
+        <UserInfo3 :userInfo="UserInfo" />
       </h1>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useUserStore } from "@/stores/userStore.js";
-import { get_personalInfo } from "@/api/api.js";
+import { useUserStore } from "@/stores/userStore.ts";
+import {get_avatar, get_personalInfo} from "@/api/api.ts";
 import UserInfo1 from './UserInfo1.vue';
 import UserInfo2 from './UserInfo2.vue';
 import UserInfo3 from "./UserInfo3.vue";
 
 // 获取用户信息
 const userStore = useUserStore();
-const token = userStore.token;
 const user_id = userStore.userInfo.user_id
 const account = userStore.userInfo.account
 
@@ -60,17 +59,55 @@ const UserInfo = ref({
 });
 
 
-// 更新用户信息
-const updateUserInfo = (updatedData: any) => {
-  UserInfo.value.avatarUrl = updatedData.avatar || '';
-  UserInfo.value.userName = updatedData.nickname || '';
-  UserInfo.value.gender = updatedData.sex === 1 ? '男' : '女';
-  UserInfo.value.email = updatedData.email || '';
-  UserInfo.value.personalNote = updatedData.note || '';
-  UserInfo.value.height = updatedData.height || '';
-  UserInfo.value.weight = updatedData.weight || '';
-  UserInfo.value.registrationDate = updatedData.register_time || '';
-  UserInfo.value.location = updatedData.location || '';
+// 新增：获取头像 URL
+const fetchAvatarUrl = async (avatarPath: string) => {
+  if (!avatarPath) return '';
+
+  try {
+    const blob = await get_avatar(avatarPath);
+    return URL.createObjectURL(blob); // 创建 blob URL
+  } catch (error) {
+    console.error('获取头像失败:', error);
+    return ''; // 返回空字符串或默认头像
+  }
+};
+
+// 新增时间格式化函数
+const formatDate = (dateString: string) => {
+  if (!dateString) return '';
+
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    }).replace(/\//g, '-');
+  } catch (e) {
+    return dateString; // 如果解析失败，返回原始字符串
+  }
+};
+
+// 更新用户信息（修改后）
+const updateUserInfo = async (updatedData: any) => {
+  const avatarUrl = await fetchAvatarUrl(updatedData.avatar || '');
+
+  UserInfo.value = {
+    avatarUrl,
+    userName: updatedData.nickname || '',
+    gender: updatedData.sex === 1 ? '男' : '女',
+    phonenumber: account,
+    email: updatedData.email || '',
+    personalNote: updatedData.note || '',
+    height: updatedData.height || '',
+    weight: updatedData.weight || '',
+    registrationDate: formatDate(updatedData.register_time) || '',
+    location: updatedData.location || ''
+  };
 };
 
 // 在组件挂载后获取个人信息
@@ -78,7 +115,7 @@ onMounted(async () => {
   try {
     const personalInfo = await get_personalInfo(user_id); // 获取个人信息
     console.log(personalInfo.user_info)
-    updateUserInfo(personalInfo.user_info);  // 更新用户信息
+    await updateUserInfo(personalInfo.user_info); // 注意这里加了 await
   } catch (error) {
     console.error('获取个人信息失败:', error);
   }

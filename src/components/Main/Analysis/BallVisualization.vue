@@ -1,27 +1,54 @@
 <template>
   <div class="visualization-container">
     <!-- 第一张图：XY坐标散点图（所有帧） -->
-    <div class="chart-title"></div>
     <div ref="allFramesChartRef" class="chart"></div>
 
     <!-- 第二张图：XY坐标散点图（当前帧） -->
-    <div class="chart-title"></div>
     <div ref="currentFrameChartRef" class="chart"></div>
 
     <div class="frame-control">
-      <input
-        type="range"
-        v-model.number="currentFrame"
-        :min="minFrame"
-        :max="maxFrame"
-        step="1"
-        @input="handleSliderChange"
-        class="slider"
-      >
-      <div class="frame-info">
-        <span>当前帧: {{ currentFrame }}</span>
-        <button @click="prevFrame" class="nav-btn">←</button>
-        <button @click="nextFrame" class="nav-btn">→</button>
+      <div class="slider-container">
+        <input
+          type="range"
+          v-model.number="currentFrame"
+          :min="minFrame"
+          :max="maxFrame"
+          step="1"
+          @input="handleSliderChange"
+          class="slider"
+        >
+      </div>
+
+      <div class="controls">
+        <button @click="prevFrame" class="control-btn" title="上一帧">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z"/>
+          </svg>
+        </button>
+
+        <button @click="togglePlay" class="play-btn" :title="isPlaying ? '暂停' : '播放'">
+          <svg viewBox="0 0 24 24" width="24" height="24">
+            <path v-if="!isPlaying" d="M8 5v14l11-7z"/>
+            <path v-else d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        </button>
+
+        <button @click="nextFrame" class="control-btn" title="下一帧">
+          <svg viewBox="0 0 24 24" width="20" height="20">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+        </button>
+
+        <span class="frame-info">帧: {{ currentFrame }}</span>
+
+        <div class="speed-control">
+          <label>速度:</label>
+          <select v-model="playSpeed" @change="adjustPlaySpeed">
+            <option value="250">慢速</option>
+            <option value="150">正常</option>
+            <option value="80">快速</option>
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -42,6 +69,9 @@ const props = defineProps({
 const allFramesChartRef = ref<HTMLElement | null>(null);
 const currentFrameChartRef = ref<HTMLElement | null>(null);
 const currentFrame = ref(0);
+const isPlaying = ref(false);
+const playInterval = ref<NodeJS.Timeout | null>(null);
+const playSpeed = ref('150'); // 默认正常速度
 let allFramesChart: echarts.ECharts | null = null;
 let currentFrameChart: echarts.ECharts | null = null;
 
@@ -56,14 +86,12 @@ const maxFrame = computed(() => {
     : 0;
 });
 
-// 获取所有有位置数据的帧
 const framesWithPosition = computed(() => {
   return props.ballData
     .filter((item: any) => item.position !== null)
     .map((item: any) => item.frame);
 });
 
-// 获取当前帧数据
 const currentFrameData = computed(() => {
   return props.ballData.find((item: any) => item.frame === currentFrame.value);
 });
@@ -78,10 +106,7 @@ const initAllFramesChart = () => {
 
     allFramesChart = echarts.init(allFramesChartRef.value);
 
-    // 过滤出有位置数据的点
     const validData = props.ballData.filter((item: any) => item.position !== null);
-
-    // 计算坐标范围
     const xValues = validData.map(item => item.position.x);
     const yValues = validData.map(item => item.position.y);
     const xExtent = [Math.min(...xValues), Math.max(...xValues)];
@@ -171,9 +196,9 @@ const initAllFramesChart = () => {
 
     allFramesChart.setOption(option);
 
-    // 添加点击事件
     allFramesChart.on('click', (params: any) => {
       if (params.data) {
+        stopPlayback();
         currentFrame.value = params.data.frame;
       }
     });
@@ -302,7 +327,6 @@ const updateCurrentFrameChart = () => {
 
   currentFrameChart.setOption(option);
 
-  // 更新所有帧图表中的当前帧高亮
   if (allFramesChart) {
     allFramesChart.setOption({
       series: [{
@@ -321,7 +345,7 @@ const updateCurrentFrameChart = () => {
 
 // 帧导航
 const prevFrame = () => {
-  // 找到前一个有数据的帧
+  stopPlayback();
   const currentIndex = framesWithPosition.value.indexOf(currentFrame.value);
   if (currentIndex > 0) {
     currentFrame.value = framesWithPosition.value[currentIndex - 1];
@@ -331,7 +355,7 @@ const prevFrame = () => {
 };
 
 const nextFrame = () => {
-  // 找到后一个有数据的帧
+  stopPlayback();
   const currentIndex = framesWithPosition.value.indexOf(currentFrame.value);
   if (currentIndex < framesWithPosition.value.length - 1) {
     currentFrame.value = framesWithPosition.value[currentIndex + 1];
@@ -342,14 +366,57 @@ const nextFrame = () => {
 
 // 滑块处理
 const handleSliderChange = () => {
+  stopPlayback();
   updateCurrentFrameChart();
+};
+
+// 播放控制
+const togglePlay = () => {
+  if (isPlaying.value) {
+    stopPlayback();
+  } else {
+    startPlayback();
+  }
+};
+
+const startPlayback = () => {
+  if (playInterval.value) clearInterval(playInterval.value);
+
+  isPlaying.value = true;
+
+  // 如果当前是最后一帧，从头开始播放
+  if (currentFrame.value >= maxFrame.value) {
+    currentFrame.value = minFrame.value;
+  }
+
+  playInterval.value = setInterval(() => {
+    if (currentFrame.value >= maxFrame.value) {
+      stopPlayback();
+      return;
+    }
+    currentFrame.value++;
+  }, parseInt(playSpeed.value));
+};
+
+const stopPlayback = () => {
+  if (playInterval.value) {
+    clearInterval(playInterval.value);
+    playInterval.value = null;
+  }
+  isPlaying.value = false;
+};
+
+const adjustPlaySpeed = () => {
+  if (isPlaying.value) {
+    stopPlayback();
+    startPlayback();
+  }
 };
 
 // 初始化所有图表
 const initCharts = () => {
   if (!props.ballData.length) return;
 
-  // 设置初始帧为第一个有数据的帧
   const firstValidFrame = framesWithPosition.value[0] || minFrame.value;
   currentFrame.value = firstValidFrame;
 
@@ -376,6 +443,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  stopPlayback();
   [allFramesChart, currentFrameChart].forEach(chart => {
     if (chart) {
       chart.dispose();
@@ -399,26 +467,20 @@ onUnmounted(() => {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
-.chart-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 15px 0 10px;
-  text-align: center;
-  color: #333;
-}
-
 .chart {
   width: 100%;
   height: 350px;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   background: #fff;
   border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .frame-control {
-  margin-top: 20px;
-  padding: 0 20px;
+  margin-top: 15px;
+}
+
+.slider-container {
+  margin-bottom: 15px;
 }
 
 .slider {
@@ -428,12 +490,11 @@ onUnmounted(() => {
   background: #e0e0e0;
   border-radius: 4px;
   outline: none;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
 }
 
 .slider:hover {
-  opacity: 1;
+  height: 10px;
 }
 
 .slider::-webkit-slider-thumb {
@@ -443,40 +504,83 @@ onUnmounted(() => {
   background: #5470C6;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s;
 }
 
-.frame-info {
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  background: #3a56b4;
+}
+
+.controls {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 12px;
+  gap: 15px;
+}
+
+.control-btn, .play-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #5470C6;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.control-btn:hover, .play-btn:hover {
+  background: #3a56b4;
+  transform: scale(1.05);
+}
+
+.control-btn:active, .play-btn:active {
+  transform: scale(0.95);
+}
+
+.play-btn {
+  width: 50px;
+  height: 50px;
+  background: #EE6666;
+}
+
+.play-btn:hover {
+  background: #d84c4c;
+}
+
+.frame-info {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  min-width: 80px;
+  text-align: center;
+}
+
+.speed-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-control label {
   font-size: 14px;
   color: #666;
 }
 
-.frame-info span {
-  margin: 0 15px;
-  font-weight: bold;
-  color: #333;
-}
-
-.nav-btn {
-  padding: 4px 12px;
-  background: #5470C6;
-  color: white;
-  border: none;
+.speed-control select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
   border-radius: 4px;
+  background: #fff;
   cursor: pointer;
-  font-size: 14px;
-  transition: background 0.2s;
+  outline: none;
 }
 
-.nav-btn:hover {
-  background: #3a56b4;
-}
-
-.nav-btn:active {
-  transform: scale(0.98);
+.speed-control select:focus {
+  border-color: #5470C6;
 }
 </style>

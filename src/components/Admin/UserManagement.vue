@@ -161,7 +161,7 @@ onMounted(() => {
           </div>
           <div class="info-row">
             <span class="info-label">电话：</span>
-            <span class="info-value">{{ userDetails?.phone || '未设置' }}</span>
+            <span class="info-value">{{ userDetails?.account || '未设置' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">邮箱：</span>
@@ -174,10 +174,6 @@ onMounted(() => {
           <div class="info-row">
             <span class="info-label">注册时间：</span>
             <span class="info-value">{{ formatDate(userDetails?.register_time) }}</span>
-          </div>
-          <div class="info-row">
-            <span class="info-label">生日：</span>
-            <span class="info-value">{{ userDetails?.birth || '未设置' }}</span>
           </div>
           <div class="info-row">
             <span class="info-label">身高：</span>

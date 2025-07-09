@@ -6,29 +6,31 @@
 
     <!-- 数据表格 -->
     <div class="chart-title">行为识别详情</div>
-    <div class="data-table">
-      <table>
-        <thead>
-          <tr>
-            <th>行为类型</th>
-            <th>人物ID</th>
-            <th>置信度</th>
-            <th>起始帧</th>
-            <th>结束帧</th>
-            <th>持续帧数</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(item, index) in processedData" :key="index">
-            <td>{{ item.predicted_label }}</td>
-            <td>{{ item.person_id }}</td>
-            <td>{{ (item.confidence_score * 100).toFixed(2) }}%</td>
-            <td>{{ item.start_frame }}</td>
-            <td>{{ item.end_frame }}</td>
-            <td>{{ item.duration }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="data-table-container">
+      <div class="table-responsive">
+        <table class="styled-table">
+          <thead>
+            <tr>
+              <th>行为类型</th>
+              <th>人物ID</th>
+              <th>置信度</th>
+              <th>起始帧</th>
+              <th>结束帧</th>
+              <th>持续帧数</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, index) in processedData" :key="index">
+              <td>{{ item.predicted_label }}</td>
+              <td>{{ item.person_id }}</td>
+              <td>{{ (item.confidence_score * 100).toFixed(2) }}%</td>
+              <td>{{ item.start_frame }}</td>
+              <td>{{ item.end_frame }}</td>
+              <td>{{ item.duration }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -277,14 +279,29 @@ watch(() => props.recognitionData, (newVal) => {
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .chart-title {
-  font-size: 16px;
-  font-weight: bold;
-  margin: 15px 0 10px;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 25px 0 15px;
   text-align: center;
-  color: #333;
+  color: #2c3e50;
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.chart-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  border-radius: 3px;
 }
 
 .chart {
@@ -292,39 +309,123 @@ watch(() => props.recognitionData, (newVal) => {
   min-height: 500px;
   margin-bottom: 30px;
   background: #fff;
-  border-radius: 6px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.data-table {
+.data-table-container {
   width: 100%;
+  margin: 30px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.table-responsive {
   overflow-x: auto;
-  margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  -webkit-overflow-scrolling: touch;
 }
 
-table {
+.styled-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-th, td {
-  padding: 12px 15px;
-  text-align: left;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-th {
-  background-color: #f8fafc;
+.styled-table th {
+  background: #2C3E50;
+  color: white;
   font-weight: 600;
-  color: #333;
+  padding: 15px 20px;
+  text-align: left;
+  position: sticky;
+  top: 0;
 }
 
-tr:hover {
-  background-color: #f5f7fa;
+.styled-table td {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #555;
+  transition: all 0.2s ease;
 }
 
-td {
-  color: #666;
+.styled-table tr:last-child td {
+  border-bottom: none;
+}
+
+.styled-table tr:hover td {
+  background-color: #f8f9fa;
+  transform: translateX(2px);
+}
+
+.styled-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.styled-table tr:hover {
+  background-color: #f1f5fd;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .recognition-container {
+    padding: 15px;
+  }
+
+  .chart {
+    height: 400px;
+  }
+
+  .styled-table th,
+  .styled-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* 动画效果 */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.styled-table tbody tr {
+  animation: fadeIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+.styled-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.styled-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+.styled-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+.styled-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+.styled-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+.styled-table tbody tr:nth-child(n+6) { animation-delay: 0.6s; }
+
+/* 置信度颜色指示 */
+.styled-table td:nth-child(3) {
+  font-weight: 500;
+}
+
+.styled-table td:nth-child(3):before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background-color: #2ecc71;
+}
+
+.styled-table tr:hover td:nth-child(3):before {
+  transform: scale(1.2);
+  transition: transform 0.2s ease;
+}
+
+.styled-table td:nth-child(3)[style*="background-color:"]:before {
+  background-color: inherit;
 }
 </style>

@@ -1,24 +1,13 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from "@/views/HomeView.vue";
-import LoginView from "@/views/LoginView.vue";
-import MainView from "@/views/MainView.vue";
-import RegisterView from "@/views/RegisterView.vue";
-import ChangePasswordView from "@/views/ChangePasswordView.vue";
-import History from "@/components/Main/History.vue";
-
-import UserInfo2 from "@/components/Main/UserInfo2.vue";
-import UserInfo3 from "@/components/Main/UserInfo3.vue";
-import AnalysisTabs from "@/components/Main/AnalysisTabs.vue";
-import FramePanel from "@/components/Main/FramePanel.vue";
-import VideoComparator from "@/components/Main/VideoComparator.vue";
-import Analysis from "@/components/Main/Analysis.vue";
+import HomeView from "@/views/Home/HomeView.vue";
+import LoginView from "@/views/Users/LoginView.vue";
+import MainView from "@/views/Main/MainView.vue";
+import RegisterView from "@/views/Users/RegisterView.vue";
+import ChangePasswordView from "@/views/Users/ChangePasswordView.vue";
+import History from "@/components/Main/History/History.vue";
 import AdminLogin from "@/components/Admin/AdminLogin.vue";
-import Admin from "@/components/Admin/Admin.vue";
-import VideoControls from "@/components/Main/VideoControls.vue";
-import Video from "@/components/Main/Video.vue";
-import AdminBar from "@/components/Admin/AdminBar.vue";
-import UserManagement from "@/components/Admin/UserManagement.vue";
-import BallVisualization from "@/components/Main/BallVisualization.vue";
+import AdminView from "@/views/Admin/AdminView.vue";
+import { useUserStore } from '@/stores/userStore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -27,66 +16,70 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { requiresAuth: false } // 首页不需要认证
     },
     {
       path: '/login',
       name: 'login',
       component: LoginView,
+      meta: { requiresAuth: false } // 登录页不需要认证
     },
     {
       path:'/register',
       name:'register',
-      component: RegisterView
+      component: RegisterView,
+      meta: { requiresAuth: false } // 注册页不需要认证
     },
     {
       path:'/change',
       name:'change',
-      component: ChangePasswordView
+      component: ChangePasswordView,
+      meta: { requiresAuth: true } // 修改密码需要认证
     },
     {
       path:'/main',
       name:'main',
-      component: MainView
+      component: MainView,
+      meta: { requiresAuth: true } // 主页面需要认证
     },
     {
       path:'/history',
       name:'history',
-      component:History
-    },
-    {
-      path:'/userinfo',
-      name:'userinfo',
-      component: UserInfo3
-    },
-    {
-      path:'/1',
-      name:'1',
-      component: BallVisualization
-    },
-    {
-      path:'/2',
-      name:'2',
-      component: VideoControls
+      component: History,
+      meta: { requiresAuth: true } // 历史记录需要认证
     },
     {
       path:'/adminLogin',
       name:'adminLogin',
-      component: AdminLogin
+      component: AdminLogin,
+      meta: { requiresAuth: false } // 管理员登录不需要认证
     },
     {
       path:'/admin',
       name:'admin',
-      component: Admin
+      component: AdminView,
+      meta: { requiresAuth: true} // 管理员页面需要认证和admin权限
     },
-    {
-      path:'/adminuser',
-      name:'adminuser',
-      component: UserManagement
-    }
   ],
 })
 
+// 全局前置守卫
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore();
+  const isAuthenticated = userStore.userInfo.user_id > 0;
+
+  // 如果路由需要认证但用户未登录
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login', query: { redirect: to.fullPath } });
+  }
+  // 如果用户已登录但尝试访问登录/注册页
+  else if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
+    next({ name: 'home' });
+  }
+  // 其他情况允许访问
+  else {
+    next();
+  }
+});
+
 export default router
-
-
-
