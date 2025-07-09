@@ -5,6 +5,16 @@
       :originalSrc="originalSrc"
       :processedSrc="processedSrc"
     />
+    <!-- 球可视化组件 -->
+    <BallVisualization
+        v-if="showVisualization && ballData.length > 0"
+        :ballData="ballData"
+    />
+    <RecognitionVisualization
+        v-if="showVisualization && recognitionData.length > 0"
+        :recognitionData="recognitionData"
+    />
+
   </div>
 </template>
 
@@ -12,7 +22,9 @@
 import {ref, onMounted, watch} from 'vue';
 import VideoComparator from '@/components/Main/VideoComparator.vue'; // 引入子组件
 import { get_video,get_result,get_json} from '@/api/api'; // 引入获取视频的 API
-import Visualization from '@/components/Main/Visualization.vue';
+import BallVisualization from '@/components/Main/BallVisualization.vue';
+import RecognitionVisualization from "@/components/Main/RecognitionVisualization.vue";
+
 // 直接在定义 props 时声明
 const props = defineProps({
   result_id: {
@@ -57,6 +69,9 @@ const resultData = ref<resultData | null>(null);
 const ballData = ref<any[]>([]);
 const actionData = ref<any[]>([]);
 const segmentData = ref<any[]>([]);
+const recognitionData = ref<any[]>([]);
+
+
 
 
 // 获取视频分析结果的函数
@@ -64,7 +79,7 @@ const loadAnalysisResult = async (result_id: number) => {
   try {
     // 获取视频分析结果
     const response = await get_result(result_id);
-    console.log('分析结果:', response);
+    console.log('分析结果:', response.result);
     return response.result; // 返回 result 部分的数据
   } catch (error) {
     console.error('加载视频分析结果失败:', error);
@@ -80,7 +95,7 @@ const loadAllData = async () => {
     showVisualization.value = false;
 
     // 1. 加载视频分析结果
-    resultData.value = await get_result(props.result_id);
+    resultData.value = await loadAnalysisResult(props.result_id);
     console.log("完整 resultData:", JSON.parse(JSON.stringify(resultData.value)));
 
     // 2. 并行加载视频和JSON数据
@@ -102,6 +117,7 @@ const loadVideos = async () => {
   try {
     // 1. 获取视频分析结果
     const resultData = await loadAnalysisResult(props.result_id);
+    console.log("完整 resultData:",resultData);
 
     // 2. 获取原视频的 Blob 数据并转换为 URL
     const originalBlob = await get_video(resultData.video_path);
@@ -121,31 +137,34 @@ const loadVideos = async () => {
 // 加载JSON数据
 const loadJsonData = async () => {
   try {
-    // 检查resultData是否存在
-    if (!resultData.value) {
-      console.log('resultData is not loaded yet');
-    }
+    const resultData = await loadAnalysisResult(props.result_id);
+    console.log("完整 resultData:",resultData);
     console.log("开始")
     console.log(resultData.ball_json_path)
     console.log(resultData.pose_json_path)
     console.log(resultData.segment_json_path)
+    console.log(resultData.recognition_json_path)
     console.log("结束")
     // 并行加载所有JSON数据
-    const [ballJson, actionJson, segmentJson] = await Promise.all([
+    const [ballJson, actionJson, segmentJson,recognitionJson] = await Promise.all([
       get_json(resultData.ball_json_path),
       get_json(resultData.pose_json_path), // 假设动作数据在pose_json_path
       get_json(resultData.segment_json_path),
+      get_json(resultData.recognition_json_path)
     ]);
-
-    ballData.value = ballJson;
-    actionData.value = actionJson;
-    segmentData.value = segmentJson;
-
-    console.log('JSON数据加载完成:', {
-      ballData: ballData.value,
-      actionData: actionData.value,
-      segmentData: segmentData.value
-    });
+    console.log(ballJson)
+    console.log(actionJson)
+    console.log(segmentJson)
+    console.log(recognitionJson)
+    ballData.value = ballJson.json;
+    actionData.value = actionJson.json;
+    segmentData.value = segmentJson.json;
+    recognitionData.value = recognitionJson.json
+    console.log("Json数据加载如下")
+    console.log("完整 ballData:", JSON.parse(JSON.stringify(ballData.value)));
+    console.log("完整 actionData:", JSON.parse(JSON.stringify(actionData.value)));
+    console.log("完整 segmentData:", JSON.parse(JSON.stringify(segmentData.value)));
+    console.log("完整 recognitionData:", JSON.parse(JSON.stringify(recognitionData.value)));
   } catch (error) {
     console.error('加载JSON数据失败:', error);
     throw error;

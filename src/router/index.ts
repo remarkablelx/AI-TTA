@@ -18,7 +18,7 @@ import VideoControls from "@/components/Main/VideoControls.vue";
 import Video from "@/components/Main/Video.vue";
 import AdminBar from "@/components/Admin/AdminBar.vue";
 import UserManagement from "@/components/Admin/UserManagement.vue";
-import Visualization from "@/components/Main/Visualization.vue";
+import BallVisualization from "@/components/Main/BallVisualization.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,7 +61,7 @@ const router = createRouter({
     {
       path:'/1',
       name:'1',
-      component: Visualization
+      component: BallVisualization
     },
     {
       path:'/2',

@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: 'http://10.244.186.196:5000', // 后端接口基础 URL
+  baseURL: 'http://192.168.223.250:5000', // 后端接口基础 URL
 });
 
 
@@ -423,7 +423,7 @@ try {
 // 查看视频分析结果API
 export const get_result = async (result_id:number) => {
 try {
-    console.log("当前的get_result是"+result_id)
+    console.log("当前的get_result_result_id是"+result_id)
     const response = await api.post('/result/get_result', {
       result_id
     });
@@ -457,5 +457,48 @@ export const get_json = async (json_path: string) => {
   } catch (error) {
     console.log('获取json请求失败' + error);
     throw new Error('获取json请求失败');
+  }
+};
+
+// 获取分析报告API
+export const create_report = async (result_id:number) => {
+try {
+    console.log("当前的get_result是"+result_id)
+    const response = await api.post('/report/create_report', {
+      result_id
+    });
+    return response.data;
+  } catch (error) {
+    console.log('生成分析报告请求失败'+error)
+    throw new Error('生成分析报告请求失败');
+  }
+};
+
+// 查看分析报告API
+export const view_report = async (report_id:number) => {
+try {
+    console.log("当前的report_id是"+report_id)
+    const response = await api.post('/report/get_report', {
+      report_id
+    });
+    return response.data;
+  } catch (error) {
+    console.log('查看分析报告请求失败'+error)
+    throw new Error('查看分析报告请求失败');
+  }
+};
+
+// 删除分析报告API
+export const delete_report = async (report_id
+:number) => {
+try {
+    console.log("当前的report_id是"+report_id)
+    const response = await api.post('/report/delete_report', {
+      report_id
+    });
+    return response.data;
+  } catch (error) {
+    console.log('查看分析报告请求失败'+error)
+    throw new Error('查看分析报告请求失败');
   }
 };
