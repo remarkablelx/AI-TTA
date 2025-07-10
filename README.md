@@ -1,33 +1,97 @@
-# pingpang
+# **智能乒乓球运动分析与可视化系统**（AI-TTA）-前端
 
-This template should help get you started developing with Vue 3 in Vite.
 
-## Recommended IDE Setup
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## 项目概述
 
-## Type Support for `.vue` Imports in TS
+AI-TTA（AI Table Tennis Analytics）是一个基于人工智能的乒乓球运动智能分析平台，前端部分采用现代化的Vue 3技术栈构建，提供高性能、交互式的运动数据分析可视化体验。
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## 项目展示
 
-## Customize configuration
+前端主要界面展示
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 技术栈
 
-## Project Setup
+- **框架**: Vue3
+- **可视化**: Echarts.js 
+- **状态管理**: Pinia
+- **样式**: CSS 
+- **其他**: TypeScript, WebSocket (实时通信)
 
-```sh
-npm install
+## 项目结构
+
+```
+/src
+├── api/               # API请求封装
+├── assets/            # 静态资源
+│   ├── photos/        # 系统图片资源
+│   ├── styles/        # 样式文件
+│   │   ├── base.css   # 基础样式
+│   │   └── main.css   # 主样式
+├── components/        # 可复用组件
+│   ├── Admin/         # 管理员相关组件
+│   ├── Home/          # 首页相关组件
+│   ├── Login/         # 登录相关组件
+│   ├── Main/          # 主界面相关组件
+│   └── Register/      # 注册组件
+├── router/            # 路由配置
+│   └── index.ts       # 路由主文件
+├── stores/            # 状态管理(Pinia)
+│   ├── userStore.ts   # 用户状态管理
+│   └── videoStore.ts  # 视频分析状态管理
+├── views/             # 页面级组件
+│   ├── Admin/         # 管理后台页面
+│   ├── Home/          # 首页
+│   ├── Main/          # 主分析界面
+│   └── Users/         # 用户管理页面
+├── App.vue            # 应用根组件
+├── main.ts            # 应用入口文件
+└── shim-vue.d.ts      # Vue类型声明文件        
 ```
 
-### Compile and Hot-Reload for Development
+## 核心组件说明
 
-```sh
-npm run dev
-```
+**1、components下：**
 
-### Type-Check, Compile and Minify for Production
+**Admin：**主要存放了有关管理员系统的组件，主要包括管理员页面侧边栏组件、记录管理界面组件、用户管理界面组件
 
-```sh
-npm run build
-```
+**Home：**主要存放欢迎界面组件
+
+**Login：**主要存放了登录组件
+
+**Main：**主要存放了有关主界面侧边栏组件、分析界面组件（包含视频播放分析组件和可视化组件）、历史记录界面组件、用户信息界面组件（包含用户简要信息界面组件和用户详细信息界面组件）
+
+Register组件：主要存放了注册界面组件和修改密码界面组件
+
+**2、views下：**
+
+**Admin：**主要展示管理员系统界面
+
+**Home：**主要展示欢迎界面
+
+**Main：**主要展示主分析、历史记录管理、用户详细信息界面
+
+**Users：**主要展示用户登录注册等界面
+
+**3、api下：**
+
+主要存放了对后端接口的API请求封装
+
+**4、router下：**
+
+主要存放了系统中用到的所有路由
+
+**5、stores下：**
+
+主要存放了相关全局状态管理信息
+
+## 快速开始
+
+1. 安装依赖: `npm install`
+2. 开发模式: `npm start`
+3. 生产构建: `npm run build`
+4. 运行测试: `npm test`
+
+## 欢迎贡献
+
+我们欢迎贡献！确保遵循代码风格标准，提交PR前请确保所有测试通过，并为新功能添加适当的测试用例。

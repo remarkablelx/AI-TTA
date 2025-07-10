@@ -34,7 +34,7 @@ const router = createRouter({
       path:'/change',
       name:'change',
       component: ChangePasswordView,
-      meta: { requiresAuth: true } // 修改密码需要认证
+      meta: { requiresAuth: false } // 修改密码不需要认证
     },
     {
       path:'/main',
@@ -58,7 +58,7 @@ const router = createRouter({
       path:'/admin',
       name:'admin',
       component: AdminView,
-      meta: { requiresAuth: true} // 管理员页面需要认证和admin权限
+      meta: { requiresAuth: false} // 管理员页面需要认证和admin权限
     },
   ],
 })
