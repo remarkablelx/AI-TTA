@@ -130,12 +130,12 @@ def action_detect(video_input_path: str, pose_json_path: str, segment_json_path:
     print("--- [4/4] 启动动作识别任务 ---")
     try:
         video_path = os.path.splitext(os.path.basename(video_input_path))[0]
-        output_video_path = os.path.join('aimodel','video_output', f"{video_path}_action.mp4")
-        recognition_json_path = os.path.join('aimodel','json', f"{video_path}_action.json")
+        output_video_path = os.path.join('video_output', f"{video_path}_action.mp4")
+        recognition_json_path = os.path.join('json', f"{video_path}_action.json")
 
-        config_path = 'aimodel/mmaction/utils/stgcn_8xb16-pingpong-2d.py'
-        checkpoint_path = 'aimodel/mmaction/utils/best_acc_top1_epoch_65.pth'
-        class_names_path = 'aimodel/mmaction/utils/action.txt'
+        config_path = 'mmaction/utils/stgcn_8xb16-pingpong-2d.py'
+        checkpoint_path = 'mmaction/utils/best_acc_top1_epoch_65.pth'
+        class_names_path = 'mmaction/utils/action.txt'
 
         required_files = [video_input_path, pose_json_path, segment_json_path,
                           config_path, checkpoint_path, class_names_path]
@@ -146,7 +146,7 @@ def action_detect(video_input_path: str, pose_json_path: str, segment_json_path:
         os.makedirs(os.path.dirname(output_video_path), exist_ok=True)
 
         command = [
-            sys.executable, 'aimodel/mmaction/infer.py',
+            sys.executable, 'mmaction/infer.py',
             '--video-input', video_input_path,
             '--video-output', output_video_path,
             '--pose-json', pose_json_path,
@@ -167,6 +167,8 @@ def action_detect(video_input_path: str, pose_json_path: str, segment_json_path:
                 os.rename(generated_json, recognition_json_path)
 
             print("--- 动作识别成功 ---")
+            print(f"输出视频路径: {output_video_path}")
+            print(f"识别结果JSON路径: {recognition_json_path}")
             return True, {
                 "annotated_video_path": os.path.abspath(output_video_path),
                 "recognition_json_path": os.path.abspath(recognition_json_path)
@@ -235,68 +237,73 @@ def report_generate(pose_json_path: str) -> Tuple[bool, Dict[str, Any]]:
         return False, {"error": f"调用脚本时发生意外错误: {str(e)}"}
 
 
-# if __name__ == "__main__":
-#     INPUT_VIDEO = 'video/test.mp4'
-#
-#     if not os.path.exists(INPUT_VIDEO):
-#         print(f"错误: 初始输入视频不存在: {INPUT_VIDEO}")
-#         exit(1)
-#
-#     print("=" * 25 + " 开始执行端到端视频分析流水线 " + "=" * 25)
-#
-#     # 创建一个主字典来收集所有路径
-#     pipeline_results = {}
-#
-#     # --- 步骤 1: 球体轨迹跟踪 ---
-#     success, ball_result = ball_detect(video_path=INPUT_VIDEO)
-#     if not success:
-#         print(f"流程终止于【球体跟踪】。错误: {ball_result.get('error')}")
-#         exit(1)
-#     # 将此步骤的结果合并到主字典中
-#     pipeline_results.update(ball_result)
-#     print("步骤 1/4 完成。")
-#
-#
-#     # --- 步骤 2: 人体骨骼点检测 ---
-#     success, pose_result = pose_detect(video_path=INPUT_VIDEO)
-#     if not success:
-#         print(f"流程终止于【骨骼点检测】。错误: {pose_result.get('error')}")
-#         exit(1)
-#     # 将此步骤的结果合并到主字典中
-#     pipeline_results.update(pose_result)
-#     print("步骤 2/4 完成。")
-#
-#
-#     # --- 步骤 3: 基于球轨迹的动作切分 ---
-#     success, segment_result = action_split(ball_json_path=pipeline_results["json_out_path"])
-#     if not success:
-#         print(f"流程终止于【动作片段切分】。错误: {segment_result.get('error')}")
-#         exit(1)
-#     # 将此步骤的结果合并到主字典中
-#     pipeline_results.update(segment_result)
-#     print("步骤 3/4 完成。")
-#
-#
-#     # --- 步骤 4: 动作识别与视频生成 ---
-#     success, final_result = action_detect(
-#         video_input_path=INPUT_VIDEO,
-#         pose_json_path=pipeline_results["json_out_path"],
-#         segment_json_path=pipeline_results["segment_json_path"],
-#     )
-#     if not success:
-#         print(f"流程终止于【动作识别】。错误: {final_result.get('error')}")
-#         exit(1)
-#     # 将此步骤的结果合并到主字典中
-#     pipeline_results.update(final_result)
-#     print("步骤 4/4 完成。")
-#
-#
-#     print("\n" + "=" * 25 + " 端到端视频分析流程全部成功完成! " + "=" * 25)
-#     print("\n所有生成的中间及最终文件路径:")
-#     # 打印包含所有路径的主字典
-#     for key, value in pipeline_results.items():
-#         if value:
-#             print(f"  - {key:<25}: {value}")
+if __name__ == "__main__":
+    # INPUT_VIDEO = 'video/test.mp4'
+    #
+    # if not os.path.exists(INPUT_VIDEO):
+    #     print(f"错误: 初始输入视频不存在: {INPUT_VIDEO}")
+    #     exit(1)
+    #
+    # print("=" * 25 + " 开始执行端到端视频分析流水线 " + "=" * 25)
+    #
+    # # 创建一个主字典来收集所有路径
+    # pipeline_results = {}
+
+    # # --- 步骤 1: 球体轨迹跟踪 ---
+    # success, ball_result = ball_detect(video_path=INPUT_VIDEO)
+    # if not success:
+    #     print(f"流程终止于【球体跟踪】。错误: {ball_result.get('error')}")
+    #     exit(1)
+    # # 将此步骤的结果合并到主字典中
+    # pipeline_results.update(ball_result)
+    # print("步骤 1/4 完成。")
+
+
+    # # --- 步骤 2: 人体骨骼点检测 ---
+    # success, pose_result = pose_detect(video_path=INPUT_VIDEO)
+    # if not success:
+    #     print(f"流程终止于【骨骼点检测】。错误: {pose_result.get('error')}")
+    #     exit(1)
+    # # 将此步骤的结果合并到主字典中
+    # pipeline_results.update(pose_result)
+    # print("步骤 2/4 完成。")
+
+
+    # # --- 步骤 3: 基于球轨迹的动作切分 ---
+    # success, segment_result = action_split(ball_json_path=pipeline_results["json_out_path"])
+    # if not success:
+    #     print(f"流程终止于【动作片段切分】。错误: {segment_result.get('error')}")
+    #     exit(1)
+    # # 将此步骤的结果合并到主字典中
+    # pipeline_results.update(segment_result)
+    # print("步骤 3/4 完成。")
+
+
+    # --- 步骤 4: 动作识别与视频生成 ---
+    # success, final_result = action_detect(
+    #     video_input_path=INPUT_VIDEO,
+    #     pose_json_path=pipeline_results["json_out_path"],
+    #     segment_json_path=pipeline_results["segment_json_path"],
+    # )
+    success, final_result = action_detect(
+        video_input_path=r"E:\fwwb\shixun\aimodel\video_output\val3_ball_detect_pose_detect.mp4",
+        pose_json_path=r"E:\fwwb\shixun\aimodel\json\val3.mp4_ball_detect_pose_detect.json",
+        segment_json_path=r"E:\fwwb\shixun\aimodel\json\val3.mp4_ball_detect_segments.json",
+    )
+    if not success:
+        print(f"流程终止于【动作识别】。错误: {final_result.get('error')}")
+        exit(1)
+    # 将此步骤的结果合并到主字典中
+    # pipeline_results.update(final_result)
+    print("步骤 4/4 完成。")
+
+
+    print("\n" + "=" * 25 + " 端到端视频分析流程全部成功完成! " + "=" * 25)
+    print("\n所有生成的中间及最终文件路径:")
+    # 打印包含所有路径的主字典
+    # for key, value in pipeline_results.items():
+    #     if value:
+    #         print(f"  - {key:<25}: {value}")
 
     # # 报告生成测试
     # POSE_JSON_INPUT = os.path.join('aimodel', 'json', 'test_pose_detect.json')

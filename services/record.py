@@ -7,7 +7,7 @@ from sqlalchemy import or_
 
 class RecordService:
     @staticmethod
-    def all_record(user_id:int, page_num:int = 1, page_size:int = 10):
+    def all_record(user_id, page_num = 1, page_size = 10):
         """获取指定用户的所有分析记录（分页）
         :param user_id: 用户ID
         :param page_num: 当前页码
@@ -46,10 +46,13 @@ class RecordService:
                 }
             }
         except Exception as e:
-            return {'code': '-1', 'message': f'获取分析记录失败{str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'获取分析记录失败{str(e)}'
+            }
 
     @staticmethod
-    def add_record(video_id:int, user_id:int):
+    def add_record(video_id, user_id):
         """创建新的分析记录
         :param video_id: 视频ID
         :param user_id: 用户ID
@@ -66,10 +69,17 @@ class RecordService:
             )
             db.session.add(new_record)
             db.session.commit()
-            return  {'code':'0','message':'记录添加成功','record':new_record.to_dict()}
+            return  {
+                'code':'0',
+                'message':'记录添加成功',
+                'record':new_record.to_dict()
+            }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'记录添加失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'记录添加失败: {str(e)}'
+            }
 
     @staticmethod
     def get_record(record_id):
@@ -101,9 +111,16 @@ class RecordService:
             record_data = record.to_dict()
             record_data['video_name'] = video_name
             record_data['result_id'] = result_id
-            return {'code': '0','message': '记录获取成功','record':record_data}
+            return {
+                'code': '0',
+                'message': '记录获取成功',
+                'record':record_data
+            }
         except Exception as e:
-            return {'code': '-1', 'message': f'记录获取失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'记录获取失败: {str(e)}'
+            }
 
     @staticmethod
     def set_record(record_id, data):
@@ -127,13 +144,23 @@ class RecordService:
                     video = Video.query.get(record.video_id)
                     video.video_name = data['video_name']
                 except Exception as e:
-                    return {'code': '-1', 'message': f'视频不存在: {str(e)}'}
+                    return {
+                        'code': '-1',
+                        'message': f'视频不存在: {str(e)}'
+                    }
 
             db.session.commit()
-            return {'code': '0', 'message': '记录更新成功', 'record': record.to_dict()}
+            return {
+                'code': '0',
+                'message': '记录更新成功',
+                'record': record.to_dict()
+            }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'记录更新失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'记录更新失败: {str(e)}'
+            }
 
     @staticmethod
     def delete_record(record_id):
@@ -147,10 +174,17 @@ class RecordService:
 
             db.session.delete(record)
             db.session.commit()
-            return {'code': '0', 'message': '记录删除成功', 'record_id': record_id}
+            return {
+                'code': '0',
+                'message': '记录删除成功',
+                'record_id': record_id
+            }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'记录删除失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'记录删除失败: {str(e)}'
+            }
 
     @staticmethod
     def search_record(user_id, search='', state=None, sort='time_desc', page_num=1, page_size=10):
@@ -217,4 +251,7 @@ class RecordService:
             }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'记录筛选失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'记录筛选失败: {str(e)}'
+            }

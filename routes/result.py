@@ -74,3 +74,17 @@ def get_video():
         conditional=True,
         etag=True
     )
+
+@result.route('/get_json',methods=["POST"])
+def get_json():
+    """根据视频路径上传视频"""
+    data = json.loads(request.data)
+    json_path = data.get('json_path')
+
+    if not json_path or not os.path.exists(json_path):
+        return {'code':'-1', 'message': '文件路径不存在'}
+
+    with open(json_path, 'r', encoding='utf-8') as file:
+        json_text = json.load(file)
+
+    return {'code':'0', 'message': '文件获取成功', 'json': json_text}

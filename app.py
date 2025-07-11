@@ -4,6 +4,7 @@ from routes.video import video
 from routes.record import record
 from routes.admin import admin
 from routes.result import result
+from routes.report import report
 from config.db_config import app
 from flask_cors import  CORS
 CORS(app)
@@ -13,6 +14,7 @@ app.register_blueprint(video, url_prefix="/video")
 app.register_blueprint(record, url_prefix="/record")
 app.register_blueprint(admin, url_prefix="/admin")
 app.register_blueprint(result, url_prefix="/result")
+app.register_blueprint(report, url_prefix="/report")
 
 @app.route('/')
 def ping():

@@ -20,7 +20,7 @@ def upload_video():
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
-    video_dir = os.path.join(project_root, 'aimodel', 'video',f"{video_name}{file_ext}")
+    video_dir = os.path.join(project_root, 'aimodel', 'video',f"{video_name}")
 
     # 调用服务层
     result = VideoService.upload_video(file, video_dir, video_name)

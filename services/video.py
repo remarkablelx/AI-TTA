@@ -5,7 +5,7 @@ import cv2
 
 class VideoService:
     @staticmethod
-    def upload_video(file_stream, video_path:str, video_name:str):
+    def upload_video(file_stream, video_path, video_name):
         """上传视频文件并保存到数据库
         :param file_stream: 文件流
         :param video_path: 视频文件存储路径
@@ -43,7 +43,10 @@ class VideoService:
             }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'视频上传失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'视频上传失败: {str(e)}'
+            }
 
     @staticmethod
     def get_info(video_path):
@@ -53,14 +56,20 @@ class VideoService:
         :return: 包含视频信息的字典
         """
         if not os.path.exists(video_path):
-            return {'code':'-1','message': "视频文件不存在"}
+            return {
+                'code':'-1',
+                'message': "视频文件不存在"
+            }
 
         try:
             # 使用 OpenCV 获取视频基础信息
             cap = cv2.VideoCapture(video_path)
 
             if not cap.isOpened():
-                return {'code':'-1','message': "无法打开视频文件"}
+                return {
+                    'code':'-1',
+                    'message': "无法打开视频文件"
+                }
 
             # 获取基本信息
             width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -91,11 +100,14 @@ class VideoService:
                 'video_size': f"{file_size_mb}MB"
             }
         except Exception as e:
-            return {'code': '-1', 'message': f'视频信息获取失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'视频信息获取失败: {str(e)}'
+            }
 
 
     @staticmethod
-    def get_video_info(video_id:int):
+    def get_video_info(video_id):
         """根据视频ID获取视频信息
         :param video_id: 视频ID
         :return: 包含视频信息的字典
@@ -104,7 +116,10 @@ class VideoService:
             # 从数据库获取视频
             video = Video.query.get(video_id)
             if not video:
-                return {'code': '-1', 'message': '视频不存在'}
+                return {
+                    'code': '-1',
+                    'message': '视频不存在'
+                }
 
             return {
                 'code': '0',
@@ -112,10 +127,13 @@ class VideoService:
                 'video_info': video.to_dict()
             }
         except Exception as e:
-            return {'code': '-1', 'message': f'获取视频信息失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'获取视频信息失败: {str(e)}'
+            }
 
     @staticmethod
-    def set_name(video_id:int, new_name:str):
+    def set_name(video_id, new_name):
         """更新视频名称
         :param video_id: 视频ID
         :param new_name: 新的视频名称
@@ -125,7 +143,10 @@ class VideoService:
             # 从数据库获取视频
             video = Video.query.get(video_id)
             if not video:
-                return {'code': '-1', 'message': '视频不存在'}
+                return {
+                    'code': '-1',
+                    'message': '视频不存在'
+                }
 
             # 更新名称
             video.video_name = new_name
@@ -137,10 +158,13 @@ class VideoService:
             }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'更新视频名称失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'更新视频名称失败: {str(e)}'
+            }
 
     @staticmethod
-    def set_path(video_id: int, new_path:str):
+    def set_path(video_id, new_path):
         """更新视频存储路径并刷新视频信息
         :param video_id: 视频ID
         :param new_path: 新的视频存储路径
@@ -150,11 +174,17 @@ class VideoService:
             # 从数据库获取视频
             video = Video.query.get(video_id)
             if not video:
-                return {'code': '-1', 'message': '视频不存在'}
+                return {
+                    'code': '-1',
+                    'message': '视频不存在'
+                }
 
             # 检查新路径是否存在
             if not os.path.exists(new_path):
-                return {'code': '-1', 'message': '新视频文件不存在'}
+                return {
+                    'code': '-1',
+                    'message': '新视频文件不存在'
+                }
 
             # 更新路径
             video.video_path = new_path
@@ -177,7 +207,7 @@ class VideoService:
             }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'更新视频路径失败: {str(e)}'}
-
-
-
+            return {
+                'code': '-1',
+                'message': f'更新视频路径失败: {str(e)}'
+            }

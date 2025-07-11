@@ -2,6 +2,8 @@ from models.admin import db, Admin
 from models.user import User
 from models.video import Video
 from models.record import Record
+from models.report import Report
+from models.result import Result
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_, desc, asc, func
 
@@ -18,11 +20,17 @@ class AdminService:
         admin = Admin.query.filter_by(account=account).first()
 
         if not admin:
-            return {'code': '-1', 'message': '管理员账号不存在'}
+            return {
+                'code': '-1',
+                'message': '管理员账号不存在'
+            }
 
         # 验证密码是否正确
         if not check_password_hash(admin.password, password):
-            return {'code': '-1', 'message': '密码错误'}
+            return {
+                'code': '-1',
+                'message': '密码错误'
+            }
 
         return {
             'code': '0',
@@ -58,9 +66,14 @@ class AdminService:
             # 构建结果列表，为每个用户添加记录数量
             result = []
             for user in users:
-                user_dict = {'user_id': user.user_id, 'account': user.account, 'nickname': user.nickname,
-                             'sex': user.sex, 'register_time': user.register_time,
-                             'record_count': count_dict.get(user.user_id, 0)}
+                user_dict = {
+                    'user_id': user.user_id,
+                    'account': user.account,
+                    'nickname': user.nickname,
+                    'sex': user.sex,
+                    'register_time': user.register_time,
+                    'record_count': count_dict.get(user.user_id, 0)
+                }
                 # 添加记录数量，如果没有记录则为0
                 result.append(user_dict)
 
@@ -76,7 +89,10 @@ class AdminService:
                 }
             }
         except Exception as e:
-            return {'code': '-1', 'message': f'用户获取失败{str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'用户获取失败{str(e)}'
+            }
 
     @staticmethod
     def get_user_info(user_id: int):
@@ -86,10 +102,17 @@ class AdminService:
         """
         try:
             user = User.query.get(user_id)
-            return {'code': -1, 'message': '用户不存在','user_info':user.to_dict()}
+            return {
+                'code': 0,
+                'message': '用户信息获取成功',
+                'user_info':user.to_dict()
+            }
 
         except Exception as e:
-            return {'code': '-1', 'message': f'用户信息获取失败{str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'用户信息获取失败{str(e)}'
+            }
 
     @staticmethod
     def delete_user(user_id):
@@ -100,19 +123,47 @@ class AdminService:
         try:
             user = User.query.get(user_id)
             if not user:
-                return {'code': -1, 'message': '用户不存在'}
+                return {
+                    'code': -1,
+                    'message': '用户不存在'
+                }
 
-            # 删除用户相关记录
+            # 获取用户的所有分析记录
+            records = Record.query.filter_by(user_id=user_id).all()
+
+            # 收集所有关联的video_id
+            video_ids = {record.video_id for record in records}
+
+            # 收集所有关联的result_id
+            results = Result.query.filter(Result.video_id.in_(video_ids)).all()
+            result_ids = {result.id for result in results}
+
+            # 删除用户的分析记录
             Record.query.filter_by(user_id=user_id).delete()
+
+            # 删除分析报告（通过result_ids）
+            Report.query.filter(Report.result_id.in_(result_ids)).delete()
+
+            # 删除分析结果
+            Result.query.filter(Result.video_id.in_(video_ids)).delete()
+
+            # 删除视频
+            Video.query.filter(Video.video_id.in_(video_ids)).delete()
 
             # 删除用户
             db.session.delete(user)
             db.session.commit()
 
-            return {'code': 0, 'message': '用户删除成功', 'user_id': user_id}
+            return {
+                'code': 0,
+                'message': '用户删除成功', 'user_id': user_id
+            }
         except Exception as e:
             db.session.rollback()
-            return {'code': -1, 'message': f'用户删除失败: {str(e)}'}
+            return {
+                'code': -1,
+                'message': f'用户删除失败: {str(e)}'
+            }
 
     @staticmethod
     def filter_users(search = None, sort_field = 'user_id', sort_order = 'asc',sex = None, page_num = 1, page_size = 10):
@@ -242,7 +293,10 @@ class AdminService:
                 }
             }
         except Exception as e:
-            return {'code': '-1', 'message': f'获取分析记录失败{str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'获取分析记录失败{str(e)}'
+            }
 
     @staticmethod
     def delete_record(record_id):
@@ -253,16 +307,36 @@ class AdminService:
         try:
             record = Record.query.get(record_id)
             if not record_id:
-                return {'code': -1, 'message': '用户不存在'}
+                return {
+                    'code': -1,
+                    'message': '用户不存在'
+                }
 
-            # 删除用户
+            video = Video.query.get(record.video_id)
+            if video:
+                result = Result.query.filter_by(video_id=record.video_id).first()
+                if result:
+                    report = Report.query.filter_by(result_id=result.result_id).first()
+                    if report:
+                        db.session.delete(report)
+                    db.session.delete(result)
+                db.session.delete(video)
+
+            # 删除分析记录
             db.session.delete(record)
             db.session.commit()
 
-            return {'code': 0, 'message': '分析记录删除成功', "record_id": record_id}
+            return {
+                'code': 0,
+                'message': '分析记录删除成功',
+                "record_id": record_id
+            }
         except Exception as e:
             db.session.rollback()
-            return {'code': -1, 'message': f'分析记录删除失败: {str(e)}'}
+            return {
+                'code': -1,
+                'message': f'分析记录删除失败: {str(e)}'
+            }
 
     @staticmethod
     def filter_record(search = None, order = 'asc',state = None, page_num = 1, page_size = 10):
@@ -325,6 +399,9 @@ class AdminService:
             }
         except Exception as e:
             db.session.rollback()
-            return {'code': '-1', 'message': f'记录筛选失败: {str(e)}'}
+            return {
+                'code': '-1',
+                'message': f'记录筛选失败: {str(e)}'
+            }
 
 

@@ -3,54 +3,216 @@
         "person_id": 0,
         "segment_frames": [
             0,
-            14
+            110
         ],
         "predicted_label": "其他",
-        "confidence_score": 0.9727193117141724
+        "confidence_score": 0.9912540316581726
     },
     {
         "person_id": 1,
         "segment_frames": [
             0,
-            14
+            110
         ],
-        "predicted_label": "正手",
-        "confidence_score": 0.6002050042152405
+        "predicted_label": "其他",
+        "confidence_score": 0.987575352191925
     },
     {
         "person_id": 2,
         "segment_frames": [
             0,
-            14
+            110
         ],
         "predicted_label": "其他",
+        "confidence_score": 0.7173357605934143
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            100,
+            122
+        ],
+        "predicted_label": "搓球",
+        "confidence_score": 0.9115550518035889
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            100,
+            122
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.6551710963249207
+    },
+    {
+        "person_id": 2,
+        "segment_frames": [
+            100,
+            122
+        ],
+        "predicted_label": "反手",
         "confidence_score": 0.9999998807907104
     },
     {
         "person_id": 0,
         "segment_frames": [
-            0,
-            19
+            122,
+            150
         ],
-        "predicted_label": "正手",
-        "confidence_score": 0.998354434967041
+        "predicted_label": "其他",
+        "confidence_score": 0.9994332194328308
     },
     {
         "person_id": 1,
         "segment_frames": [
-            0,
-            19
+            122,
+            150
         ],
-        "predicted_label": "正手",
-        "confidence_score": 1.0
+        "predicted_label": "其他",
+        "confidence_score": 0.997270405292511
     },
     {
         "person_id": 2,
         "segment_frames": [
-            0,
-            19
+            122,
+            150
+        ],
+        "predicted_label": "正手",
+        "confidence_score": 0.9166322946548462
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            130,
+            160
+        ],
+        "predicted_label": "搓球",
+        "confidence_score": 0.9694470763206482
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            130,
+            160
         ],
         "predicted_label": "其他",
-        "confidence_score": 0.9998558759689331
+        "confidence_score": 0.9990190267562866
+    },
+    {
+        "person_id": 2,
+        "segment_frames": [
+            130,
+            160
+        ],
+        "predicted_label": "反手",
+        "confidence_score": 0.9998918771743774
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            300,
+            400
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.9858869910240173
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            300,
+            400
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.9839635491371155
+    },
+    {
+        "person_id": 4,
+        "segment_frames": [
+            300,
+            400
+        ],
+        "predicted_label": "发球",
+        "confidence_score": 0.9967387318611145
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            396,
+            412
+        ],
+        "predicted_label": "反手",
+        "confidence_score": 1.0
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            396,
+            412
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.9321404695510864
+    },
+    {
+        "person_id": 4,
+        "segment_frames": [
+            396,
+            412
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 1.0
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            408,
+            428
+        ],
+        "predicted_label": "反手",
+        "confidence_score": 0.9083990454673767
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            408,
+            428
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.707473874092102
+    },
+    {
+        "person_id": 4,
+        "segment_frames": [
+            408,
+            428
+        ],
+        "predicted_label": "反手",
+        "confidence_score": 0.9999998807907104
+    },
+    {
+        "person_id": 0,
+        "segment_frames": [
+            416,
+            431
+        ],
+        "predicted_label": "反手",
+        "confidence_score": 1.0
+    },
+    {
+        "person_id": 1,
+        "segment_frames": [
+            416,
+            431
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 0.991744339466095
+    },
+    {
+        "person_id": 4,
+        "segment_frames": [
+            416,
+            431
+        ],
+        "predicted_label": "其他",
+        "confidence_score": 1.0
     }
 ]
